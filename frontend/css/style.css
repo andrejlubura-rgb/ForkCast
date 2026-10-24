@@ -1,0 +1,64 @@
+/*
+ * ForkCast custom styles.
+ * Loaded after Bootstrap so the variables below override the defaults.
+ */
+
+:root {
+    --bs-primary: #2f855a;
+    --bs-primary-rgb: 47, 133, 90;
+
+    --bs-link-color: #2f855a;
+    --bs-link-color-rgb: 47, 133, 90;
+    --bs-link-hover-color: #276749;
+    --bs-link-hover-color-rgb: 39, 103, 73;
+
+    --bs-body-bg: #fffaf4;
+    --bs-body-font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+
+    /* Accent colour used for highlights, e.g. the active nav link. */
+    --fc-accent: #f6993f;
+}
+
+/* Primary buttons use the ForkCast green instead of the Bootstrap blue. */
+.btn-primary {
+    --bs-btn-bg: #2f855a;
+    --bs-btn-border-color: #2f855a;
+    --bs-btn-hover-bg: #276749;
+    --bs-btn-hover-border-color: #276749;
+    --bs-btn-active-bg: #22543d;
+    --bs-btn-active-border-color: #22543d;
+    --bs-btn-disabled-bg: #2f855a;
+    --bs-btn-disabled-border-color: #2f855a;
+    --bs-btn-focus-shadow-rgb: 47, 133, 90;
+}
+
+/* Orange highlight for the active navbar link. */
+.navbar .nav-link.active {
+    color: var(--fc-accent);
+}
+
+/* Keep the highlighted dropdown item on-brand. */
+.navbar .dropdown-menu {
+    --bs-dropdown-link-active-bg: #2f855a;
+}
+
+/* Footer uses the primary green. */
+.site-footer {
+    background-color: var(--bs-primary);
+}
+
+/* Each view keeps a comfortable height while its content is still short. */
+.view {
+    min-height: 60vh;
+}
+
+/* Placeholder box for recipe images (no external images are allowed). */
+.recipe-thumb {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bs-secondary-bg);
+    border-radius: 0.5rem;
+}
