@@ -1,4 +1,168 @@
-<div class="container py-4">
-    <h1 class="h2">Profile</h1>
-    <p class="text-body-secondary mb-0">View and update your account details here.</p>
+<!-- Profile view: account summary, personal details and password form. The account details are filled from the API in Milestone 4. -->
+<div class="profile-page auth-page">
+    <div class="container py-4">
+        <div class="mb-4">
+            <p class="profile-eyebrow mb-2">Your account</p>
+            <h1 class="mb-2">Profile</h1>
+            <p class="text-body-secondary profile-intro mb-0">
+                Review your account and keep your personal details up to date.
+            </p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-12 col-lg-4">
+                <div class="card profile-summary">
+                    <div class="card-body p-4">
+                        <!-- STATIC-SAMPLE -->
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="profile-avatar" aria-hidden="true">AM</span>
+                            <div>
+                                <h2 class="h5 mb-1 text-break" id="profile-display-name">Ana Marković</h2>
+                                <p class="small text-body-secondary mb-0 text-break"
+                                   id="profile-display-email">ana.markovic@example.com</p>
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            <span class="badge text-bg-warning">Admin</span>
+                            <span class="badge text-bg-secondary">
+                                Member since <time datetime="2026-01-12">Jan 2026</time>
+                            </span>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="row g-2 text-center">
+                            <div class="col-4">
+                                <div class="profile-stat">
+                                    <span class="profile-stat-value" id="profile-stat-recipes">12</span>
+                                    <span class="profile-stat-label">Recipes</span>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="profile-stat">
+                                    <span class="profile-stat-value" id="profile-stat-meals">14</span>
+                                    <span class="profile-stat-label">Meals this week</span>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="profile-stat">
+                                    <span class="profile-stat-value" id="profile-stat-plans">6</span>
+                                    <span class="profile-stat-label">Meal plans</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /STATIC-SAMPLE -->
+
+                        <div class="d-grid gap-2 mt-4">
+                            <a class="btn btn-outline-primary" href="#recipes" id="profile-recipes-link">
+                                View my recipes
+                            </a>
+                            <button type="button" class="btn btn-outline-primary" id="profile-logout">Log out</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-8">
+                <div class="card auth-card mb-4">
+                    <div class="auth-body p-4 p-sm-5">
+                        <p class="auth-eyebrow mb-2">Account</p>
+                        <h2 class="auth-title mb-2">Personal details</h2>
+                        <p class="text-body-secondary mb-4">
+                            These details identify you across ForkCast.
+                        </p>
+
+                        <form id="profile-details-form" class="needs-validation auth-form">
+                            <div class="row g-3">
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label" for="profile-first-name">First name</label>
+                                    <input class="form-control" type="text" id="profile-first-name"
+                                           name="first-name" autocomplete="given-name" maxlength="50" required>
+                                </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label" for="profile-last-name">Last name</label>
+                                    <input class="form-control" type="text" id="profile-last-name"
+                                           name="last-name" autocomplete="family-name" maxlength="50" required>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label" for="profile-email">Email</label>
+                                    <input class="form-control" type="email" id="profile-email" name="email"
+                                           autocomplete="email" aria-describedby="profile-email-help" required>
+                                    <div class="form-text" id="profile-email-help">
+                                        You use this email to sign in.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex flex-wrap justify-content-end gap-2 mt-4">
+                                <button class="btn btn-primary" type="submit" id="profile-details-save">
+                                    Save changes
+                                </button>
+                            </div>
+
+                            <div class="alert alert-success d-none mt-3 mb-0" id="profile-details-status"
+                                 role="status">
+                                Your details were saved.
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card auth-card">
+                    <div class="auth-body p-4 p-sm-5">
+                        <p class="auth-eyebrow mb-2">Security</p>
+                        <h2 class="auth-title mb-2">Change password</h2>
+                        <p class="text-body-secondary mb-4">
+                            Choose a strong password you do not use anywhere else.
+                        </p>
+
+                        <form id="profile-password-form" class="needs-validation auth-form">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label" for="profile-current-password">
+                                        Current password
+                                    </label>
+                                    <input class="form-control" type="password" id="profile-current-password"
+                                           name="current-password" autocomplete="current-password" required>
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label" for="profile-new-password">New password</label>
+                                    <input class="form-control" type="password" id="profile-new-password"
+                                           name="new-password" autocomplete="new-password" minlength="8"
+                                           aria-describedby="profile-new-password-help" required>
+                                    <div class="form-text" id="profile-new-password-help">
+                                        At least 8 characters.
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label" for="profile-password-confirm">
+                                        Confirm new password
+                                    </label>
+                                    <input class="form-control" type="password" id="profile-password-confirm"
+                                           name="password-confirm" autocomplete="new-password" minlength="8"
+                                           required>
+                                </div>
+                            </div>
+
+                            <div class="d-flex flex-wrap justify-content-end gap-2 mt-4">
+                                <button class="btn btn-primary" type="submit" id="profile-password-save">
+                                    Update password
+                                </button>
+                            </div>
+
+                            <div class="alert alert-success d-none mt-3 mb-0" id="profile-password-status"
+                                 role="status">
+                                Your password was updated.
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

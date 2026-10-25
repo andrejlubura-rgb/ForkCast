@@ -1,6 +1,6 @@
 <!-- Recipe detail view: one recipe with ingredients, instructions and the plan/delete modals (sample data replaced in Milestone 4). -->
 <div class="container py-4">
-    <a class="btn btn-outline-primary recipe-pill-btn mb-3" href="#recipes">
+    <a class="btn btn-outline-primary mb-3" href="#recipes">
         <span aria-hidden="true">&larr;</span> Back to recipes
     </a>
 
@@ -33,11 +33,11 @@
             <!-- /STATIC-SAMPLE -->
 
             <div class="d-flex flex-wrap gap-2">
-                <button type="button" class="btn btn-primary recipe-detail-btn" id="recipe-add-to-plan"
+                <button type="button" class="btn btn-primary" id="recipe-add-to-plan"
                         data-bs-toggle="modal" data-bs-target="#recipe-plan-modal">Add to plan</button>
-                <a class="btn btn-outline-primary recipe-detail-btn" href="#recipe-form" id="recipe-edit"
+                <a class="btn btn-outline-primary" href="#recipe-form" id="recipe-edit"
                    data-requires="owner-or-admin">Edit</a>
-                <button type="button" class="btn btn-outline-danger recipe-detail-btn" id="recipe-delete"
+                <button type="button" class="btn btn-outline-danger" id="recipe-delete"
                         data-bs-toggle="modal" data-bs-target="#recipe-delete-modal"
                         data-requires="owner-or-admin">Delete</button>
             </div>
