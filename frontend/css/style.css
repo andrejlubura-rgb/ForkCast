@@ -1413,6 +1413,26 @@ main {
 }
 
 /* ------------------------------------------------------------------
+ * Discover page
+ * The search and filter toolbar uses the same surface, corner radius
+ * and shadow as the recipe cards, so the filters and the results read
+ * as one page.
+ * ------------------------------------------------------------------ */
+.discover-panel {
+    border-radius: 1.35rem;
+    box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.35);
+}
+
+/* Compact labels above the filter fields, matching the form labels elsewhere. */
+.discover-panel .form-label {
+    margin-bottom: 0.35rem;
+    color: #dbe7de;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+/* ------------------------------------------------------------------
  * Login, register and recipe form
  * These views share one rounded card on a tinted band. From the lg
  * breakpoint up login and register add a green side panel; the recipe
@@ -1555,18 +1575,31 @@ main {
     box-shadow: 0 0 0 0.25rem rgba(47, 133, 90, 0.35);
 }
 
-/* Selects match the inputs; the right padding keeps room for the arrow. */
+/*
+ * Selects match the auth input boxes. The background is an opaque mix of
+ * the card surface and the same white overlay the inputs use, because a
+ * translucent select makes the native option list render white.
+ */
 .auth-form .form-select {
     padding: 0.75rem 2.25rem 0.75rem 0.95rem;
     border-color: rgba(255, 255, 255, 0.16);
     border-radius: 0.8rem;
-    background-color: rgba(255, 255, 255, 0.04);
+    background-color: #212b25;
+    background-color: color-mix(in srgb, #fff 4%, var(--auth-surface));
+    color: var(--bs-body-color);
 }
 
 .auth-form .form-select:focus {
     border-color: rgba(143, 223, 174, 0.7);
-    background-color: rgba(255, 255, 255, 0.06);
+    background-color: #262f2a;
+    background-color: color-mix(in srgb, #fff 6%, var(--auth-surface));
     box-shadow: 0 0 0 0.25rem rgba(47, 133, 90, 0.35);
+}
+
+/* Keep the opened option list on the same dark surface as the site selects. */
+.auth-form .form-select option {
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
 }
 
 .auth-check .form-check-input {
