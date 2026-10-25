@@ -224,36 +224,102 @@ h6,
 .site-header {
     --fc-header-ink: #f7f2e7;
     --fc-header-muted: rgba(247, 242, 231, 0.74);
+    /* Total height the compact bar hides: twice the padding removed per side. */
+    --fc-header-shrink: 0.7rem;
 
     position: sticky;
     top: 0;
     z-index: 1030;
     padding-block: 1.3rem;
+    /*
+     * The header's own box is painted with the site background. When the green
+     * bar (::before) slides up, the strip it leaves behind shows this gradient
+     * instead of the black body background. The 1px border is transparent and
+     * only keeps the box height; the visible border is on the green bar.
+     */
+    background-color: var(--fc-band-bg);
+    background-image: var(--fc-band-image);
+    border-bottom: 1px solid transparent;
+}
+
+/*
+ * Green navigation bar. It is a separate layer so it can slide up while the
+ * header's background stays in place. Only a transform is animated, so the
+ * page layout never changes.
+ */
+.site-header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: -1px;
+    left: 0;
     background-color: #1b4332;
     background-image: linear-gradient(135deg, #173a2a, #245c41 55%, #1b4332);
     border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-    /*
-     * The header is sticky, so it stays in view while the page moves under it.
-     * Keeping it on its own compositor layer stops the browser from repainting
-     * the bar and its shadow on every scroll frame.
-     *
-     * The compact state changes padding and brand size in one layout pass. Those
-     * properties are deliberately not transitioned: animating them would reflow
-     * the whole page on every frame, which is what made scrolling stutter.
-     */
+    transform: translateY(0);
+    transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
     will-change: transform;
+    pointer-events: none;
 }
 
 /* Compact state while the page is scrolled (class added by js/navbar.js). */
 .site-header.is-scrolled {
-    padding-block: 0.95rem;
-    box-shadow: 0 12px 32px rgba(8, 24, 16, 0.28);
+    --fc-brand-scale: 0.93;
+
+    /*
+     * Transparent, so the strip below the compact bar shows the page content
+     * again instead of a site-coloured band that would cover it.
+     */
+    background-color: transparent;
+    background-image: none;
 }
 
+.site-header.is-scrolled::before {
+    transform: translateY(calc(-1 * var(--fc-header-shrink)));
+}
+
+/*
+ * The green bar slides up, so its content would sit lower in the shorter bar.
+ * Moving the content up by half the slide keeps it vertically centred without
+ * touching the layout.
+ */
 .site-header-inner {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.site-header.is-scrolled .site-header-inner {
+    transform: translateY(calc(-1 * var(--fc-header-shrink) / 2));
+}
+
+/*
+ * Compact shadow. Fading a pseudo-element's opacity is composited, while
+ * animating box-shadow would repaint the shadow on every frame. The strip sits
+ * at the bottom of the green bar and moves with it.
+ */
+.site-header::after {
+    content: "";
+    position: absolute;
+    /* Start below the 1px bottom border, not over it. */
+    top: calc(100% + 1px);
+    right: 0;
+    left: 0;
+    height: 2rem;
+    background-image: linear-gradient(to bottom, rgba(8, 24, 16, 0.28), rgba(8, 24, 16, 0));
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(0);
+    transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.28s ease;
+}
+
+.site-header.is-scrolled::after {
+    opacity: 1;
+    transform: translateY(calc(-1 * var(--fc-header-shrink)));
 }
 
 /* Brand lockup: rounded icon tile, wordmark and small tagline. */
@@ -282,13 +348,14 @@ h6,
     font-size: 1.35rem;
     line-height: 1;
     box-shadow: 0 0.5rem 1rem rgba(8, 24, 16, 0.3);
-    /* Width and height belong to the compact header state, so they are not
-       transitioned: animating them would relayout the header on every frame. */
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    /* The compact state scales the mark instead of resizing it, because a
+       transform never reflows the header while scrolling. */
+    transform: scale(var(--fc-brand-scale, 1));
+    transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.25s ease;
 }
 
 .site-brand:hover .site-brand-mark {
-    transform: translateY(-2px) rotate(-4deg);
+    transform: translateY(-2px) rotate(-4deg) scale(var(--fc-brand-scale, 1));
     box-shadow: 0 0.75rem 1.4rem rgba(8, 24, 16, 0.36);
 }
 
@@ -310,6 +377,11 @@ h6,
     font-size: 1.4rem;
     font-weight: 800;
     letter-spacing: -0.03em;
+    /* Same reason as the mark: scale instead of changing font-size, so the
+       header height and the page layout stay untouched. */
+    transform: scale(var(--fc-brand-scale, 1));
+    transform-origin: left center;
+    transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .site-brand-tagline {
@@ -326,16 +398,6 @@ h6,
     .site-brand-tagline {
         display: block;
     }
-}
-
-.site-header.is-scrolled .site-brand-mark {
-    width: 2.55rem;
-    height: 2.55rem;
-    border-radius: 0.8rem;
-}
-
-.site-header.is-scrolled .site-brand-name {
-    font-size: 1.3rem;
 }
 
 /* Custom hamburger: three bars that turn into an X while the menu is open. */
@@ -410,7 +472,7 @@ h6,
     gap: 0.4rem;
     padding: 0.6rem 0.9rem;
     border-radius: 999px;
-    color: var(--fc-header-muted);
+    color: #fff;
     font-size: 1rem;
     font-weight: 600;
     letter-spacing: 0.005em;
@@ -456,7 +518,7 @@ h6,
 }
 
 .site-header .navbar-nav .site-nav-login {
-    color: var(--fc-header-ink);
+    color: #fff;
 }
 
 /* Primary call to action in the navigation: the shared pill button in a light colour,
@@ -612,19 +674,28 @@ h6,
 /* Respect the user's motion preference. */
 @media (prefers-reduced-motion: reduce) {
     .site-header,
+    .site-header-inner,
+    .site-header::before,
+    .site-header::after,
     .site-brand-mark,
     .site-brand-name,
     .site-nav-link,
     .site-nav-link::before,
     .site-menu-toggle,
     .site-menu-toggle-bar,
+    .site-back-to-top,
     .site-header .dropdown-item {
         transition: none;
     }
 
-    .site-brand:hover .site-brand-mark,
+    .site-back-to-top:hover,
     .site-header .navbar-nav .site-nav-cta:hover {
         transform: none;
+    }
+
+    /* Keep the compact size; only the hover lift and rotation are removed. */
+    .site-brand:hover .site-brand-mark {
+        transform: scale(var(--fc-brand-scale, 1));
     }
 }
 
@@ -653,6 +724,127 @@ main {
     margin-top: auto;
     background-color: #0d1f17;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Brand lockup at the top of the footer: same tile as the navbar, larger name. */
+.site-footer-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.site-footer-brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+}
+
+.site-footer-brand-name {
+    font-family: var(--fc-font-display);
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+}
+
+.site-footer-brand-tagline {
+    margin-top: 0.3rem;
+    color: #9fb2a5;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.site-footer-about {
+    max-width: 30rem;
+    color: #a7b9ac;
+    line-height: 1.6;
+}
+
+/* Column headings stay small and quiet, so the links below them lead the eye. */
+.site-footer-title {
+    margin-bottom: 0.9rem;
+    color: #b6f0cc;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.site-footer-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    margin-bottom: 0;
+    color: #a7b9ac;
+    line-height: 1.5;
+}
+
+.site-footer-links a {
+    color: #d7e5db;
+    text-decoration: none;
+}
+
+.site-footer-links a:hover,
+.site-footer-links a:focus-visible {
+    color: #b8f2cd;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+
+/* The three "how it works" lines get a small arrow instead of a bullet. */
+.site-footer-steps li {
+    position: relative;
+    padding-left: 1.1rem;
+}
+
+.site-footer-steps li::before {
+    position: absolute;
+    left: 0;
+    color: #8fdfae;
+    content: "→";
+}
+
+/* Bottom bar: copyright on one side, credit and back-to-top link on the other. */
+.site-footer-bar {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.site-footer-copy {
+    color: #c8dbcf;
+}
+
+/* Round "back to top" button in the bottom-right corner of the footer. */
+.site-back-to-top {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 1px solid rgba(143, 223, 174, 0.35);
+    border-radius: 999px;
+    background-color: rgba(47, 133, 90, 0.22);
+    color: #d7e5db;
+    font-size: 1.2rem;
+    line-height: 1;
+    transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.site-back-to-top:hover {
+    border-color: rgba(143, 223, 174, 0.6);
+    background-color: rgba(47, 133, 90, 0.4);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.site-back-to-top:focus-visible {
+    outline: 2px solid #8fdfae;
+    outline-offset: 3px;
 }
 
 /* ------------------------------------------------------------------
@@ -1257,6 +1449,207 @@ main {
     }
 }
 
+/* Planner preview: this week at a glance. The week header repeats the planner
+   toolbar, and one small card per day shows which meal slots are filled. */
+.home-planner-card {
+    border-radius: 1.35rem;
+    box-shadow: var(--home-shadow);
+}
+
+.home-planner-week-caption {
+    color: #9fb2a5;
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.home-planner-week-value {
+    font-family: var(--fc-font-display);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.home-planner-progress {
+    width: 100%;
+    max-width: 16rem;
+}
+
+.home-planner-progress .progress {
+    --bs-progress-bg: rgba(255, 255, 255, 0.08);
+    --bs-progress-bar-bg: #2f855a;
+    height: 0.45rem;
+    border-radius: 999px;
+}
+
+.home-planner-progress .progress-bar {
+    border-radius: 999px;
+}
+
+/* One day of the preview: day name, date and the four meal slots. */
+.home-planner-day {
+    height: 100%;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid var(--home-line);
+    border-radius: 1rem;
+    background-color: rgba(255, 255, 255, 0.025);
+}
+
+.home-planner-day-name {
+    color: var(--home-ink);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.home-planner-day-date {
+    color: #9fb2a5;
+    font-weight: 600;
+}
+
+/* Slot chips: a soft green fill for a planned meal, a dashed outline for a
+   free slot, so a half planned day is readable at a glance. */
+.home-planner-slot {
+    padding: 0.15rem 0.55rem;
+    border: 1px solid var(--home-line);
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.home-planner-slot-planned {
+    border-color: rgba(143, 223, 174, 0.32);
+    background-color: rgba(143, 223, 174, 0.12);
+    color: #b6f0cc;
+}
+
+.home-planner-slot-free {
+    border-style: dashed;
+    color: #9fb2a5;
+}
+
+/* FAQ: answers to the planner questions, next to a short call to action.
+   Every answer is its own rounded tile and only one opens at a time. */
+.home-faq {
+    /* Room under the last section, so the footer never crowds the last answer. */
+    padding-bottom: clamp(2.5rem, 6vw, 4.5rem);
+}
+
+/*
+ * Scroll anchoring: an opening answer changes the height of the section, and
+ * the browser would keep whatever it picked below that answer in place by
+ * scrolling the page, so the content above moved instead of the answer
+ * pushing the footer down. Nothing inside the section, and nothing under it,
+ * may become an anchor. js/home.js pins the scroll position as well, because
+ * some browsers still moved the page with this declaration in place.
+ */
+.home-faq,
+.site-footer {
+    overflow-anchor: none;
+}
+
+.home-faq-help {
+    border: 1px solid var(--home-line);
+    border-radius: 1.35rem;
+    background-color: var(--home-surface);
+    box-shadow: var(--home-shadow);
+}
+
+.home-faq-help-title {
+    color: var(--home-ink);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.home-faq-accordion .accordion-item {
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+    border: 1px solid var(--home-line);
+    border-radius: 1rem;
+    background-color: rgba(255, 255, 255, 0.025);
+}
+
+.home-faq-accordion .accordion-item:last-child {
+    margin-bottom: 0;
+}
+
+.home-faq-accordion .accordion-button {
+    padding: 1rem 3rem 1rem 1.15rem;
+    border: 0;
+    background-color: transparent;
+    color: var(--home-ink);
+    font-family: var(--fc-font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.35;
+    box-shadow: none;
+}
+
+.home-faq-accordion .accordion-button.collapsed:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* Bootstrap's own chevron is removed; the icon span below draws the plus. */
+.home-faq-accordion .accordion-button::after {
+    content: none;
+}
+
+/*
+ * A circle with a plus made of two equally long bars that share one centre
+ * point. Unlike a text glyph or a background image, the bars cannot sit off
+ * centre, and the whole circle turns 45 degrees into an "x" when open.
+ */
+.home-faq-icon {
+    position: relative;
+    flex-shrink: 0;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin-left: auto;
+    border: 1px solid var(--home-line);
+    border-radius: 999px;
+    color: var(--home-accent-ink);
+    transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.home-faq-icon::before,
+.home-faq-icon::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0.75rem;
+    height: 2px;
+    margin: -1px 0 0 -0.375rem;
+    border-radius: 999px;
+    background-color: currentColor;
+}
+
+/* The second bar is the first one turned by 90 degrees. */
+.home-faq-icon::after {
+    transform: rotate(90deg);
+}
+
+.home-faq-accordion .accordion-button:not(.collapsed) {
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+    background-color: rgba(143, 223, 174, 0.07);
+    color: #b6f0cc;
+}
+
+.home-faq-accordion .accordion-button:not(.collapsed) .home-faq-icon {
+    border-color: rgba(246, 153, 63, 0.55);
+    background-color: rgba(246, 153, 63, 0.16);
+    transform: rotate(45deg);
+}
+
+/* Top padding keeps the answer text off the question, especially while it opens. */
+.home-faq-accordion .accordion-body {
+    padding: 0.75rem 1.15rem 1.15rem;
+    color: rgba(233, 240, 234, 0.78);
+    line-height: 1.7;
+}
+
 .home-page a:focus-visible,
 .home-page button:focus-visible {
     outline: 3px solid rgba(246, 153, 63, 0.85);
@@ -1292,6 +1685,10 @@ main {
 
     .home-step-card:hover {
         transform: none;
+    }
+
+    .home-faq-icon {
+        transition: none;
     }
 
     /* No drifting cards: the row becomes a normal horizontal scroller. */

@@ -71,9 +71,60 @@
 
     <main id="app"></main>
 
-    <footer class="site-footer py-4 text-center text-white">
-        <div class="container">
-            <p class="mb-0 small">ForkCast - plan your week, one plate at a time</p>
+    <footer class="site-footer text-white">
+        <div class="container py-5">
+            <div class="row g-4 g-lg-5">
+                <div class="col-12 col-lg-4">
+                    <div class="site-footer-brand">
+                        <span class="site-brand-mark" aria-hidden="true"><span class="site-brand-mark-icon">🍴</span></span>
+                        <span class="site-footer-brand-text">
+                            <span class="site-footer-brand-name">ForkCast</span>
+                            <span class="site-footer-brand-tagline">meal planner</span>
+                        </span>
+                    </div>
+                    <p class="site-footer-about mb-0">
+                        Save your favourite recipes, plan the week and let ForkCast turn
+                        everything you planned into one shopping list.
+                    </p>
+                </div>
+
+                <div class="col-6 col-lg-2">
+                    <h2 class="site-footer-title h6">Plan</h2>
+                    <ul class="site-footer-links list-unstyled">
+                        <li><a href="#recipes">My recipes</a></li>
+                        <li><a href="#discover">Discover</a></li>
+                        <li><a href="#planner">Weekly planner</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-6 col-lg-2">
+                    <h2 class="site-footer-title h6">Account</h2>
+                    <ul class="site-footer-links list-unstyled">
+                        <li><a href="#profile">Profile</a></li>
+                        <li><a href="#login">Login</a></li>
+                        <li><a href="#register">Register</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-12 col-lg-4">
+                    <h2 class="site-footer-title h6">How ForkCast works</h2>
+                    <ul class="site-footer-links site-footer-steps list-unstyled">
+                        <li>Save your own recipes or import them from TheMealDB</li>
+                        <li>Fill the breakfast, lunch and dinner slots of your week</li>
+                        <li>Get a shopping list from everything you planned</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="site-footer-bar">
+            <div class="container d-flex align-items-center justify-content-between gap-3 py-3">
+                <p class="site-footer-copy mb-0 small">ForkCast - plan your week, one plate at a time</p>
+                <button class="site-back-to-top flex-shrink-0" type="button" id="siteBackToTop"
+                        aria-label="Back to top">
+                    <span aria-hidden="true">↑</span>
+                </button>
+            </div>
         </div>
     </footer>
 
@@ -84,5 +135,6 @@
     <script src="js/app.js"></script>
     <script src="js/navbar.js"></script>
     <script src="js/home.js"></script>
+    <script src="js/back-to-top.js"></script>
 </body>
 </html>

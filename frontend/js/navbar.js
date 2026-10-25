@@ -15,26 +15,30 @@
     }
 
     var ticking = false;
+    var isCompact = false;
 
     /*
-     * The compact state makes the header shorter, which moves the page content
-     * and can make the browser adjust the scroll position to keep that content
-     * steady (scroll anchoring). With a single threshold, that adjustment could
-     * push the scroll position back over the threshold and flip the state over
-     * and over, which looked like the header shaking near the top of the page.
-     * The two values below are farther apart than the header's height change,
-     * so a single adjustment can no longer flip the state back.
+     * The compact state only moves the header with a CSS transform, so it does
+     * not change the page layout and cannot trigger scroll anchoring. The two
+     * thresholds are still kept apart so a trackpad resting near the boundary
+     * does not make the header flip back and forth.
+     *
+     * expandAt is larger than the distance the compact bar slides up (0.7rem
+     * at the default font size), so the header starts expanding while the
+     * content below it is still under the bar. That avoids showing a strip of
+     * page background near the top.
      */
     var compactAt = 32;
-    var expandAt = 4;
+    var expandAt = 16;
 
     function updateHeaderState() {
         var scrollPosition = window.scrollY;
+        var shouldBeCompact = isCompact ? scrollPosition > expandAt : scrollPosition > compactAt;
 
-        if (scrollPosition > compactAt) {
-            header.classList.add('is-scrolled');
-        } else if (scrollPosition < expandAt) {
-            header.classList.remove('is-scrolled');
+        // Only touch the DOM when the state actually changes, not on every frame.
+        if (shouldBeCompact !== isCompact) {
+            isCompact = shouldBeCompact;
+            header.classList.toggle('is-scrolled', isCompact);
         }
 
         ticking = false;
