@@ -1,4 +1,91 @@
-<div class="container py-4">
-    <h1 class="h2">Register</h1>
-    <p class="text-body-secondary mb-0">Create a ForkCast account to start planning your meals.</p>
+<!-- Register view. Uses native HTML5 validation only; the submit is wired to the API in Milestone 4. -->
+<div class="auth-page auth-page-compact">
+    <section class="auth-band" aria-labelledby="register-title">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 col-lg-10 col-xl-9">
+                    <div class="card auth-card">
+                        <div class="row g-0">
+                            <div class="col-lg-5 auth-aside d-none d-lg-flex">
+                                <p class="auth-eyebrow mb-2">Join ForkCast</p>
+                                <p class="auth-aside-title mb-3">Your week, planned in minutes.</p>
+                                <p class="auth-aside-text mb-4">
+                                    Keep your favourite meals together and turn the plan into a shopping list
+                                    without extra work.
+                                </p>
+                                <ul class="auth-points list-unstyled mb-0">
+                                    <li>
+                                        <span class="auth-point-mark" aria-hidden="true">&#10003;</span>
+                                        Free to use
+                                    </li>
+                                    <li>
+                                        <span class="auth-point-mark" aria-hidden="true">&#10003;</span>
+                                        Discover new recipes
+                                    </li>
+                                    <li>
+                                        <span class="auth-point-mark" aria-hidden="true">&#10003;</span>
+                                        Plan the whole week
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div class="col-12 col-lg-7">
+                                <div class="auth-body d-flex flex-column justify-content-center h-100 p-4 p-sm-5">
+                                    <p class="auth-eyebrow mb-1">Get started</p>
+                                    <h1 class="auth-title mb-2" id="register-title">Create your account</h1>
+                                    <p class="text-body-secondary mb-3">
+                                        Start planning your meals with ForkCast.
+                                    </p>
+
+                                    <form id="register-form" class="needs-validation auth-form">
+                                        <div class="row g-3">
+                                            <div class="col-12 col-md-6">
+                                                <label class="form-label" for="register-first-name">First name</label>
+                                                <input class="form-control" type="text" id="register-first-name"
+                                                       name="first-name" autocomplete="given-name" required>
+                                            </div>
+
+                                            <div class="col-12 col-md-6">
+                                                <label class="form-label" for="register-last-name">Last name</label>
+                                                <input class="form-control" type="text" id="register-last-name"
+                                                       name="last-name" autocomplete="family-name" required>
+                                            </div>
+
+                                            <div class="col-12">
+                                                <label class="form-label" for="register-email">Email</label>
+                                                <input class="form-control" type="email" id="register-email"
+                                                       name="email" autocomplete="email" required>
+                                            </div>
+
+                                            <div class="col-12">
+                                                <label class="form-label" for="register-password">Password</label>
+                                                <input class="form-control" type="password" id="register-password"
+                                                       name="password" autocomplete="new-password" minlength="8" required>
+                                                <div class="form-text">Use at least 8 characters.</div>
+                                            </div>
+
+                                            <div class="col-12">
+                                                <label class="form-label" for="register-password-confirm">Confirm password</label>
+                                                <input class="form-control" type="password" id="register-password-confirm"
+                                                       name="password-confirm" autocomplete="new-password"
+                                                       minlength="8" required>
+                                            </div>
+
+                                            <div class="col-12">
+                                                <button class="btn btn-primary w-100 auth-submit" type="submit">Create account</button>
+                                            </div>
+                                        </div>
+                                    </form>
+
+                                    <p class="auth-switch text-center small mt-3 mb-0">
+                                        Already have an account? <a href="#login">Log in</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 </div>

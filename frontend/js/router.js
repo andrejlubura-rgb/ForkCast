@@ -52,6 +52,9 @@
 
             $('#app').append($view);
             $view.removeClass('d-none');
+
+            // Lets view helpers (for example js/home.js) decorate the new markup.
+            $(document).trigger('view:loaded', [name]);
         });
     }
 

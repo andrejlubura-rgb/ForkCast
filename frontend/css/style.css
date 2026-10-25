@@ -7,16 +7,83 @@
     --bs-primary: #2f855a;
     --bs-primary-rgb: 47, 133, 90;
 
-    --bs-link-color: #2f855a;
-    --bs-link-color-rgb: 47, 133, 90;
-    --bs-link-hover-color: #276749;
-    --bs-link-hover-color-rgb: 39, 103, 73;
+    /*
+     * Dark theme: near-black page background with slightly lighter surfaces and
+     * light text, so cards, inputs and text stay clearly distinguishable.
+     */
+    --bs-body-bg: #111815;
+    --bs-body-color: #e9f0ea;
+    --bs-secondary-color: rgba(233, 240, 234, 0.72);
+    --bs-border-color: rgba(255, 255, 255, 0.14);
 
-    --bs-body-bg: #fffaf4;
-    --bs-body-font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    --fc-surface: #18221c;
+    --fc-line: rgba(255, 255, 255, 0.1);
+    --fc-muted: #a7b9ac;
+
+    /* Lighter green links keep enough contrast against the dark background. */
+    --bs-link-color: #8fdfae;
+    --bs-link-color-rgb: 143, 223, 174;
+    --bs-link-hover-color: #b8f2cd;
+    --bs-link-hover-color-rgb: 184, 242, 205;
+
+    /*
+     * Typefaces, loaded from Google Fonts in index.html:
+     * Plus Jakarta Sans for headings and the brand, Inter for body text.
+     * The system stacks are fallbacks if the web fonts are unavailable.
+     */
+    --fc-font-display: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
+    --fc-font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+        "Noto Sans", sans-serif;
+
+    --bs-body-font-family: var(--fc-font-body);
 
     /* Accent colour used for highlights, e.g. the active nav link. */
     --fc-accent: #f6993f;
+
+    /*
+     * Tinted gradient band used as the page background. It is defined once so
+     * the login/register views and the other pages share exactly the same one.
+     */
+    --fc-band-bg: #131c17;
+    --fc-band-image:
+        radial-gradient(circle at 8% 4%, rgba(246, 153, 63, 0.16), transparent 32%),
+        radial-gradient(circle at 92% 12%, rgba(47, 133, 90, 0.34), transparent 40%),
+        linear-gradient(135deg, #101713 0%, #17261d 100%);
+}
+
+/* Headings and other display text use the tighter, geometric typeface. */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6,
+.display-1,
+.display-2,
+.display-3,
+.display-4,
+.site-brand-name,
+.home-hero-title,
+.home-section-title,
+.home-feature-title,
+.recipe-card-title,
+.home-step-number {
+    font-family: var(--fc-font-display);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+}
+
+/* Buttons read better with a slightly heavier body weight. */
+.btn {
+    font-weight: 600;
+    letter-spacing: 0.005em;
 }
 
 /* Primary buttons use the ForkCast green instead of the Bootstrap blue. */
@@ -32,19 +99,1566 @@
     --bs-btn-focus-shadow-rgb: 47, 133, 90;
 }
 
-/* Orange highlight for the active navbar link. */
-.navbar .nav-link.active {
-    color: var(--fc-accent);
+/* Outline buttons need light text and borders on the dark background. */
+.btn-outline-primary {
+    --bs-btn-color: #9fe3b9;
+    --bs-btn-border-color: rgba(159, 227, 185, 0.45);
+    --bs-btn-hover-color: #10201a;
+    --bs-btn-hover-bg: #9fe3b9;
+    --bs-btn-hover-border-color: #9fe3b9;
+    --bs-btn-active-color: #10201a;
+    --bs-btn-active-bg: #86d9ab;
+    --bs-btn-active-border-color: #86d9ab;
+    --bs-btn-focus-shadow-rgb: 143, 223, 174;
 }
 
-/* Keep the highlighted dropdown item on-brand. */
-.navbar .dropdown-menu {
-    --bs-dropdown-link-active-bg: #2f855a;
+/* Orange call to action, using the same accent as the focus rings. */
+.btn-accent {
+    --bs-btn-color: #1b1b1b;
+    --bs-btn-bg: #f6993f;
+    --bs-btn-border-color: #f6993f;
+    --bs-btn-hover-color: #1b1b1b;
+    --bs-btn-hover-bg: #f8a95c;
+    --bs-btn-hover-border-color: #f8a95c;
+    --bs-btn-active-color: #1b1b1b;
+    --bs-btn-active-bg: #e8872a;
+    --bs-btn-active-border-color: #e8872a;
+    --bs-btn-disabled-color: #1b1b1b;
+    --bs-btn-disabled-bg: #f6993f;
+    --bs-btn-disabled-border-color: #f6993f;
+    --bs-btn-focus-shadow-rgb: 246, 153, 63;
 }
 
-/* Footer uses the primary green. */
+/* Cards sit on a slightly lighter surface than the page background. */
+.card {
+    --bs-card-bg: var(--fc-surface);
+    --bs-card-border-color: var(--fc-line);
+    --bs-card-color: var(--bs-body-color);
+    --bs-card-cap-bg: #1e2a23;
+}
+
+/* ------------------------------------------------------------------
+ * Site header: custom sticky navigation. Bootstrap is only used for the
+ * collapse/dropdown behaviour, so the visual rules live here.
+ * ------------------------------------------------------------------ */
+.site-header {
+    --fc-header-ink: #f7f2e7;
+    --fc-header-muted: rgba(247, 242, 231, 0.74);
+
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    padding-block: 1.3rem;
+    background-color: #1b4332;
+    background-image: linear-gradient(135deg, #173a2a, #245c41 55%, #1b4332);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    /*
+     * The header is sticky, so it stays in view while the page moves under it.
+     * Keeping it on its own compositor layer stops the browser from repainting
+     * the bar and its shadow on every scroll frame.
+     *
+     * The compact state changes padding and brand size in one layout pass. Those
+     * properties are deliberately not transitioned: animating them would reflow
+     * the whole page on every frame, which is what made scrolling stutter.
+     */
+    will-change: transform;
+}
+
+/* Compact state while the page is scrolled (class added by js/navbar.js). */
+.site-header.is-scrolled {
+    padding-block: 0.95rem;
+    box-shadow: 0 12px 32px rgba(8, 24, 16, 0.28);
+}
+
+.site-header-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Brand lockup: rounded icon tile, wordmark and small tagline. */
+.site-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-right: auto;
+    padding: 0;
+    color: var(--fc-header-ink);
+}
+
+.site-brand:hover,
+.site-brand:focus {
+    color: var(--fc-header-ink);
+}
+
+.site-brand-mark {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 0.9rem;
+    background: linear-gradient(135deg, #f7b267, #f6993f 55%, #e07b2a);
+    font-size: 1.35rem;
+    line-height: 1;
+    box-shadow: 0 0.5rem 1rem rgba(8, 24, 16, 0.3);
+    /* Width and height belong to the compact header state, so they are not
+       transitioned: animating them would relayout the header on every frame. */
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.site-brand:hover .site-brand-mark {
+    transform: translateY(-2px) rotate(-4deg);
+    box-shadow: 0 0.75rem 1.4rem rgba(8, 24, 16, 0.36);
+}
+
+/*
+ * The fork and knife come from a colour emoji font, so the text colour does not
+ * reach the glyph. The filter turns it into a white silhouette instead.
+ */
+.site-brand-mark-icon {
+    filter: brightness(0) invert(1);
+}
+
+.site-brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+}
+
+.site-brand-name {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+}
+
+.site-brand-tagline {
+    display: none;
+    margin-top: 0.3rem;
+    color: var(--fc-header-muted);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+@media (min-width: 992px) {
+    .site-brand-tagline {
+        display: block;
+    }
+}
+
+.site-header.is-scrolled .site-brand-mark {
+    width: 2.55rem;
+    height: 2.55rem;
+    border-radius: 0.8rem;
+}
+
+.site-header.is-scrolled .site-brand-name {
+    font-size: 1.3rem;
+}
+
+/* Custom hamburger: three bars that turn into an X while the menu is open. */
+.site-menu-toggle {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.28rem;
+    width: 3rem;
+    height: 3rem;
+    padding: 0.7rem 0.65rem;
+    border: 1px solid rgba(247, 242, 231, 0.28);
+    border-radius: 0.85rem;
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--fc-header-ink);
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.site-menu-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.14);
+    border-color: rgba(247, 242, 231, 0.5);
+}
+
+.site-menu-toggle-bar {
+    display: block;
+    width: 100%;
+    height: 2px;
+    border-radius: 2px;
+    background-color: var(--fc-header-ink);
+    transition: transform 0.25s ease, opacity 0.2s ease;
+}
+
+.site-menu-toggle[aria-expanded="true"] .site-menu-toggle-bar:nth-child(1) {
+    transform: translateY(6.5px) rotate(45deg);
+}
+
+.site-menu-toggle[aria-expanded="true"] .site-menu-toggle-bar:nth-child(2) {
+    opacity: 0;
+}
+
+.site-menu-toggle[aria-expanded="true"] .site-menu-toggle-bar:nth-child(3) {
+    transform: translateY(-6.5px) rotate(-45deg);
+}
+
+/* Bootstrap hides .navbar-toggler at this breakpoint; keep our version hidden too. */
+@media (min-width: 992px) {
+    .navbar-expand-lg .site-menu-toggle {
+        display: none;
+    }
+
+    /* The auto margins split the free space on both sides of the main links, so
+       they sit in the middle between the brand and Login/Register on the right. */
+    .site-nav {
+        margin-inline: auto;
+    }
+}
+
+.site-nav-panel {
+    align-items: center;
+}
+
+.site-nav {
+    margin-bottom: 0;
+    gap: 0.2rem;
+}
+
+/* Nav links: pill hover background and animated orange underline. */
+.site-header .navbar-nav .site-nav-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 0.9rem;
+    border-radius: 999px;
+    color: var(--fc-header-muted);
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.005em;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+/*
+ * The underline lives on ::before, not ::after: Bootstrap draws the caret of
+ * the admin dropdown toggle with ::after, and the two pseudo-elements would
+ * otherwise paint over each other.
+ */
+.site-header .navbar-nav .site-nav-link::before {
+    content: "";
+    position: absolute;
+    left: 0.9rem;
+    right: 0.9rem;
+    bottom: 0.32rem;
+    height: 2px;
+    border-radius: 2px;
+    background-color: var(--fc-accent);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.25s ease;
+}
+
+.site-header .navbar-nav .site-nav-link:hover,
+.site-header .navbar-nav .site-nav-link:focus-visible,
+.site-header .navbar-nav .site-nav-link.active {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.site-header .navbar-nav .site-nav-link:hover::before,
+.site-header .navbar-nav .site-nav-link:focus-visible::before,
+.site-header .navbar-nav .site-nav-link.active::before {
+    transform: scaleX(1);
+}
+
+.site-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.site-header .navbar-nav .site-nav-login {
+    color: var(--fc-header-ink);
+}
+
+/* Primary call to action in the navigation. */
+.site-header .navbar-nav .site-nav-cta {
+    padding: 0.65rem 1.15rem;
+    color: #1b4332;
+    background-color: #fff7ec;
+    background-image: linear-gradient(135deg, #fffaf2, #f5ebdd);
+    box-shadow: 0 0.45rem 1.1rem rgba(8, 24, 16, 0.24);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+
+.site-header .navbar-nav .site-nav-link.site-nav-cta::before {
+    display: none;
+}
+
+.site-header .navbar-nav .site-nav-cta:hover,
+.site-header .navbar-nav .site-nav-cta:focus-visible {
+    color: #1b4332;
+    background-color: #fff;
+    background-image: linear-gradient(135deg, #ffffff, #fff7ec);
+    transform: translateY(-2px);
+    box-shadow: 0 0.7rem 1.4rem rgba(8, 24, 16, 0.3);
+}
+
+.site-header .navbar-nav .site-nav-link.site-nav-cta.active {
+    color: #1b4332;
+    background-color: #fff;
+    background-image: linear-gradient(135deg, #ffffff, #fff7ec);
+    box-shadow: 0 0.45rem 1.1rem rgba(8, 24, 16, 0.24), inset 0 -3px 0 var(--fc-accent);
+}
+
+/* Admin dropdown: dark panel with rounded, roomy items. */
+.site-header .dropdown-menu {
+    min-width: 12rem;
+    margin-top: 0.6rem;
+    padding: 0.45rem;
+    background-color: #121d17;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 1rem;
+    box-shadow: 0 1.25rem 2.5rem rgba(0, 0, 0, 0.45);
+}
+
+.site-header .dropdown-item {
+    padding: 0.6rem 0.85rem;
+    border-radius: 0.6rem;
+    color: #dce9df;
+    font-weight: 600;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.site-header .dropdown-item:hover,
+.site-header .dropdown-item:focus {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.site-header .dropdown-item.active {
+    background-color: #2f855a;
+    color: #fff;
+}
+
+/* Visible keyboard focus that fits the palette. */
+.site-header a:focus-visible,
+.site-header button:focus-visible {
+    outline: 2px solid var(--fc-accent);
+    outline-offset: 3px;
+}
+
+/* Mobile menu panel. */
+@media (max-width: 991.98px) {
+    .site-nav-panel {
+        flex-basis: 100%;
+        width: 100%;
+        margin-top: 0.9rem;
+        padding: 0.75rem;
+        background-color: #173a2a;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 1.1rem;
+        box-shadow: 0 1.25rem 2.5rem rgba(8, 24, 16, 0.35);
+    }
+
+    .site-nav {
+        width: 100%;
+        margin-left: 0;
+        gap: 0.15rem;
+    }
+
+    .site-header .navbar-nav .site-nav-link {
+        width: 100%;
+        justify-content: flex-start;
+        padding: 0.85rem 1rem;
+        border-radius: 0.75rem;
+        font-size: 1.05rem;
+    }
+
+    .site-header .navbar-nav .site-nav-link::before {
+        right: auto;
+        bottom: 0.42rem;
+        left: 1rem;
+        width: 2rem;
+    }
+
+    .site-nav-actions {
+        flex-direction: column;
+        align-items: stretch;
+        margin-top: 0.35rem;
+        padding-top: 0.65rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .site-header .navbar-nav .site-nav-cta {
+        justify-content: center;
+        padding: 0.85rem 1rem;
+        font-size: 1.05rem;
+    }
+
+    .site-header .navbar-nav .site-admin-toggle {
+        justify-content: space-between;
+    }
+
+    .site-header .dropdown-menu {
+        position: static;
+        width: 100%;
+        min-width: 0;
+        margin-top: 0.25rem;
+        padding: 0.25rem 0 0.35rem 0.5rem;
+        background-color: transparent;
+        border: 0;
+        border-radius: 0.75rem;
+        box-shadow: none;
+    }
+
+    .site-header .dropdown-item {
+        padding: 0.7rem 0.8rem;
+        color: var(--fc-header-muted);
+    }
+
+    .site-header .dropdown-item:hover,
+    .site-header .dropdown-item:focus {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: var(--fc-header-ink);
+    }
+
+    .site-header .dropdown-item.active {
+        background-color: #2f855a;
+        color: #fff;
+    }
+}
+
+/* Respect the user's motion preference. */
+@media (prefers-reduced-motion: reduce) {
+    .site-header,
+    .site-brand-mark,
+    .site-brand-name,
+    .site-nav-link,
+    .site-nav-link::before,
+    .site-menu-toggle,
+    .site-menu-toggle-bar,
+    .site-header .dropdown-item {
+        transition: none;
+    }
+
+    .site-brand:hover .site-brand-mark,
+    .site-header .navbar-nav .site-nav-cta:hover {
+        transform: none;
+    }
+}
+
+/* ------------------------------------------------------------------
+ * Sticky footer
+ * The page always fills the viewport, so a view with little content
+ * still pushes the footer to the bottom edge instead of leaving a gap.
+ * ------------------------------------------------------------------ */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    /* Dynamic viewport height avoids a gap left by the mobile browser toolbars. */
+    min-height: 100dvh;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+}
+
+/* Footer uses a deep green that matches the dark page background. */
 .site-footer {
-    background-color: var(--bs-primary);
+    flex-shrink: 0;
+    margin-top: auto;
+    background-color: #0d1f17;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ------------------------------------------------------------------
+ * Recipe card
+ * Photo-first card shared by the home "Recently added" row and the
+ * recipes grid, so a recipe looks the same in both places. The width
+ * comes from the layout around it (marquee card or grid column).
+ * ------------------------------------------------------------------ */
+.recipe-card {
+    overflow: hidden;
+    border: 1px solid var(--fc-line);
+    border-radius: 1.35rem;
+    background-color: var(--fc-surface);
+    box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.45);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.recipe-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 1.4rem 3rem rgba(0, 0, 0, 0.5);
+}
+
+/* 4:3 photo that clips the zoom, so the enlarged image stays inside the card. */
+.recipe-card-media {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    background-color: #202b25;
+}
+
+.recipe-card-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.45s ease;
+}
+
+.recipe-card:hover .recipe-card-img,
+.recipe-card:focus-within .recipe-card-img {
+    transform: scale(1.04);
+}
+
+/* Pill for the category and source labels; it sits in the card body by default. */
+.recipe-card-badge {
+    padding: 0.45rem 0.8rem;
+    border: 1px solid rgba(143, 223, 174, 0.32);
+    border-radius: 999px;
+    background-color: rgba(20, 33, 26, 0.92);
+    color: #b6f0cc;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+/* On a photo the pill moves to the top-left corner. */
+.recipe-card-media .recipe-card-badge {
+    position: absolute;
+    top: 0.85rem;
+    left: 0.85rem;
+}
+
+/* Orange pill, used to mark recipes imported from TheMealDB. */
+.recipe-card-badge-alt {
+    border-color: rgba(246, 178, 107, 0.34);
+    background-color: rgba(35, 27, 18, 0.92);
+    color: #ffd3a1;
+}
+
+.recipe-card-title {
+    color: var(--bs-body-color);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+.recipe-card-meta {
+    color: #9fb2a5;
+    font-weight: 600;
+}
+
+/* Full-width pill button that closes the card, same as the home card button. */
+.recipe-card-action {
+    padding: 0.8rem 1.6rem;
+    border-radius: 999px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    box-shadow: 0 0.7rem 1.4rem rgba(0, 0, 0, 0.35);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease,
+        border-color 0.2s ease, color 0.2s ease;
+}
+
+.recipe-card-action:hover,
+.recipe-card-action:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 0.95rem 1.8rem rgba(0, 0, 0, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .recipe-card,
+    .recipe-card-img,
+    .recipe-card-action {
+        transition: none;
+    }
+
+    .recipe-card:hover,
+    .recipe-card:focus-within,
+    .recipe-card-action:hover,
+    .recipe-card-action:focus-visible {
+        transform: none;
+    }
+
+    .recipe-card:hover .recipe-card-img,
+    .recipe-card:focus-within .recipe-card-img {
+        transform: none;
+    }
+}
+
+/* ------------------------------------------------------------------
+ * Home page
+ * Scoped to .home-page so the other views keep their current styling.
+ * ------------------------------------------------------------------ */
+.home-page {
+    --home-ink: #e9f0ea;
+    --home-surface: #18221c;
+    --home-line: rgba(255, 255, 255, 0.1);
+    --home-accent-ink: #f6b26b;
+    --home-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.45);
+}
+
+.home-eyebrow {
+    color: var(--home-accent-ink);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.home-section-title {
+    color: var(--home-ink);
+    font-size: clamp(1.65rem, 3vw, 2.25rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+}
+
+/*
+ * Hero: full-bleed tinted band. The band reaches both viewport edges, while the
+ * text and the photo stay on the Bootstrap grid inside a container.
+ */
+.home-hero {
+    position: relative;
+    overflow: hidden;
+    padding-block: clamp(2.25rem, 5vw, 4.75rem);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: #131c17;
+    background-image:
+        radial-gradient(circle at 8% 6%, rgba(246, 153, 63, 0.16), transparent 32%),
+        radial-gradient(circle at 92% 14%, rgba(47, 133, 90, 0.35), transparent 40%),
+        linear-gradient(135deg, #101713 0%, #17261d 100%);
+}
+
+.home-hero-title {
+    max-width: 44rem;
+    color: var(--home-ink);
+    font-size: clamp(2.5rem, 5.6vw, 4.5rem);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 0.98;
+    text-wrap: balance;
+}
+
+.home-hero .lead {
+    max-width: 40rem;
+    font-size: clamp(1.08rem, 1.5vw, 1.3rem);
+    line-height: 1.6;
+}
+
+.home-hero-media {
+    position: relative;
+}
+
+/* Photo card: the images cross-fade one after another to keep the hero alive. */
+.home-hero-slides {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 1.5rem;
+    background-color: #202b25;
+    box-shadow: 0 1.4rem 2.8rem rgba(0, 0, 0, 0.5);
+}
+
+.home-hero-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    animation: home-hero-fade 25s ease-in-out infinite;
+}
+
+/*
+ * Each photo is delayed so it takes over as the previous one fades out.
+ * The negative delay on the first photo keeps it visible on page load.
+ */
+.home-hero-img:nth-child(1) {
+    animation-delay: -0.75s;
+}
+
+.home-hero-img:nth-child(2) {
+    animation-delay: 4.25s;
+}
+
+.home-hero-img:nth-child(3) {
+    animation-delay: 9.25s;
+}
+
+.home-hero-img:nth-child(4) {
+    animation-delay: 14.25s;
+}
+
+.home-hero-img:nth-child(5) {
+    animation-delay: 19.25s;
+}
+
+@keyframes home-hero-fade {
+    0% {
+        opacity: 0;
+    }
+
+    3% {
+        opacity: 1;
+    }
+
+    20% {
+        opacity: 1;
+    }
+
+    23% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+/* Pause the rotation while the pointer is over the card (mouse users only). */
+@media (hover: hover) {
+    .home-hero-slides:hover .home-hero-img {
+        animation-play-state: paused;
+    }
+}
+
+/* With reduced motion the card shows a single photo instead of rotating. */
+@media (prefers-reduced-motion: reduce) {
+    .home-hero-img {
+        animation: none;
+        opacity: 0;
+    }
+
+    .home-hero-img:first-child {
+        opacity: 1;
+    }
+}
+
+/* Phones show one photo too: the cross-fade is the heaviest animation there. */
+@media (max-width: 767.98px) {
+    .home-hero-img {
+        animation: none;
+        opacity: 0;
+    }
+
+    .home-hero-img:first-child {
+        opacity: 1;
+    }
+}
+
+.home-hero-note {
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.85rem 1.15rem;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 1rem;
+    background-color: rgba(24, 34, 28, 0.95);
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.45);
+}
+
+.home-hero-note-label {
+    color: #9fb2a5;
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.home-hero-note-value {
+    color: var(--home-ink);
+    font-family: var(--fc-font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+/* Short benefit list under the hero buttons. */
+.home-hero-points {
+    color: var(--fc-muted);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.home-hero-points li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.home-hero-point-mark {
+    display: inline-grid;
+    place-items: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 999px;
+    background-color: rgba(143, 223, 174, 0.16);
+    color: #8fdfae;
+    font-size: 0.68rem;
+    font-weight: 800;
+}
+
+.home-hero-actions .btn {
+    width: 100%;
+}
+
+/* Modern pill buttons used by every call to action on the home page. */
+.home-page .home-btn {
+    padding: 0.8rem 1.6rem;
+    border-radius: 999px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease,
+        border-color 0.2s ease, color 0.2s ease;
+}
+
+.home-page .home-btn.btn-lg {
+    padding: 1rem 1.9rem;
+    font-size: 1.06rem;
+}
+
+.home-page .btn-primary.home-btn {
+    box-shadow: 0 0.7rem 1.4rem rgba(0, 0, 0, 0.35);
+}
+
+.home-page .btn-primary.home-btn:hover,
+.home-page .btn-primary.home-btn:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 0.95rem 1.8rem rgba(0, 0, 0, 0.45);
+}
+
+.home-page .btn-outline-primary.home-btn {
+    --bs-btn-color: #9fe3b9;
+    --bs-btn-border-color: rgba(159, 227, 185, 0.45);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #2f855a;
+    --bs-btn-hover-border-color: #2f855a;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #276749;
+    --bs-btn-active-border-color: #276749;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    box-shadow: 0 0.35rem 1rem rgba(0, 0, 0, 0.3);
+}
+
+/*
+ * The secondary hero button fades into a green gradient on hover. A pseudo
+ * element is used because CSS cannot transition between background gradients.
+ */
+.home-page .btn-outline-primary.home-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: linear-gradient(135deg, #22543d 0%, #2f855a 55%, #276749 100%);
+    opacity: 0;
+    transition: opacity 0.22s ease;
+}
+
+.home-page .btn-outline-primary.home-btn:hover::before,
+.home-page .btn-outline-primary.home-btn:focus-visible::before {
+    opacity: 1;
+}
+
+/* Surface of the "How it works" cards. */
+.home-step-card {
+    background-color: var(--home-surface);
+    border: 1px solid var(--home-line);
+    border-radius: 1.35rem;
+    box-shadow: var(--home-shadow);
+}
+
+/* Numbered "How it works" cards. */
+.home-step-card {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.home-step-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 4px;
+    background-image: linear-gradient(90deg, #8fdfae, #f6993f, #8fdfae, #f6993f, #8fdfae);
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+    animation: home-step-line 5s linear infinite;
+}
+
+/* The gradient slides along the top edge, so the line keeps moving. */
+@keyframes home-step-line {
+    from {
+        background-position: 0% 50%;
+    }
+
+    to {
+        background-position: 100% 50%;
+    }
+}
+
+.home-step-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 1.4rem 3rem rgba(0, 0, 0, 0.5);
+}
+
+.home-step-number {
+    display: block;
+    color: var(--home-accent-ink);
+    font-size: 2.25rem;
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    line-height: 1;
+}
+
+/* ------------------------------------------------------------------
+ * Meal of the day: full-bleed band. On small screens the photo sits above
+ * the text; from the lg breakpoint up the photo fills the whole band.
+ * ------------------------------------------------------------------ */
+.home-feature {
+    position: relative;
+    border-block: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: #101a15;
+}
+
+.home-feature-media {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 16 / 10;
+    background-color: #202b25;
+}
+
+.home-feature-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.home-feature-inner {
+    /* Sits above the absolutely positioned photo on large screens. */
+    position: relative;
+    z-index: 1;
+    padding-block: clamp(1.75rem, 4vw, 2.5rem);
+}
+
+.home-feature-kicker {
+    color: var(--home-accent-ink);
+    font-family: var(--fc-font-display);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.home-feature-title {
+    max-width: 18ch;
+    color: var(--home-ink);
+    font-size: clamp(2rem, 5vw, 3.3rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.02;
+    text-wrap: balance;
+}
+
+.home-feature-text {
+    max-width: 34rem;
+    color: rgba(233, 240, 234, 0.82);
+    font-size: clamp(1rem, 1.2vw, 1.1rem);
+    line-height: 1.65;
+}
+
+/* Chips for prep time, servings and difficulty. */
+.home-feature-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+    max-width: 26rem;
+    margin-bottom: 1.5rem;
+}
+
+.home-feature-meta-item {
+    padding: 0.7rem 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 1rem;
+    /* Solid enough to read without a backdrop blur, which is expensive to
+       repaint over the large photo while the page scrolls. */
+    background-color: rgba(16, 26, 21, 0.82);
+}
+
+/*
+ * The level chip shows its difficulty with a coloured border and glow. A masked
+ * conic gradient was used before, but the mask made the chip its own render
+ * surface; a plain border looks almost the same and is much cheaper to paint.
+ */
+.home-feature-meta-level {
+    border-color: rgba(143, 223, 174, 0.5);
+}
+
+.home-feature-meta-level-easy {
+    border-color: rgba(143, 223, 174, 0.5);
+    box-shadow: 0 0 1rem rgba(143, 223, 174, 0.16);
+}
+
+.home-feature-meta-level-medium {
+    border-color: rgba(246, 153, 63, 0.55);
+    box-shadow: 0 0 1rem rgba(246, 153, 63, 0.16);
+}
+
+.home-feature-meta-level-hard {
+    border-color: rgba(229, 72, 77, 0.55);
+    box-shadow: 0 0 1rem rgba(229, 72, 77, 0.18);
+}
+
+.home-meta-label {
+    margin-bottom: 0.2rem;
+    color: #9fb2a5;
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.home-meta-value {
+    color: var(--home-ink);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+/* From lg up the photo becomes the background of the whole band. */
+@media (min-width: 992px) {
+    .home-feature {
+        display: grid;
+        align-items: center;
+        min-height: clamp(26rem, 42vw, 33rem);
+    }
+
+    .home-feature-media {
+        position: absolute;
+        inset: 0;
+        aspect-ratio: auto;
+    }
+
+    /*
+     * Scrim: solid on the left so the text stays readable, fading to almost
+     * transparent on the right so the photo keeps the section lively.
+     */
+    .home-feature-media::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(90deg, #0d1712 4%, rgba(13, 23, 18, 0.94) 38%, rgba(13, 23, 18, 0.58) 66%,
+                rgba(13, 23, 18, 0.15) 100%),
+            radial-gradient(circle at 84% 16%, rgba(246, 153, 63, 0.2), transparent 55%);
+    }
+
+    .home-feature-inner {
+        padding-block: clamp(3rem, 5.5vw, 4.5rem);
+    }
+
+    .home-feature-content {
+        max-width: 40rem;
+    }
+
+    /*
+     * No backdrop blur here. Blurring the photo under the chips made the browser
+     * redo that blur while the section scrolled, which was the lag spike users
+     * felt when the full-size photo appeared. A more opaque chip reads the same.
+     */
+    .home-feature-meta-item {
+        background-color: rgba(13, 23, 18, 0.78);
+    }
+}
+
+/* Recently added: a horizontal row that scrolls on its own and loops seamlessly.
+   js/home.js repeats the card group as often as the screen needs and moves the
+   track by exactly one group width, so every loop lands on an identical copy. */
+.home-marquee {
+    overflow: hidden;
+    padding-block: 0.5rem 2rem;
+}
+
+.home-marquee-track {
+    display: flex;
+    align-items: stretch;
+    width: max-content;
+}
+
+/* The animation only runs once the copies and the loop distance are in place. */
+.home-marquee-running .home-marquee-track {
+    animation: home-marquee-scroll 36s linear infinite;
+}
+
+/* Readers and keyboard users can stop the row by hovering or focusing a card. */
+.home-marquee:hover .home-marquee-track,
+.home-marquee:focus-within .home-marquee-track {
+    animation-play-state: paused;
+}
+
+.home-marquee-group {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 1.5rem;
+    /* The trailing space counts towards the group width, so one group is exactly
+       the distance the track travels per loop and the copies line up. */
+    padding-inline-end: 1.5rem;
+}
+
+.home-marquee-card {
+    flex: 0 0 auto;
+    width: clamp(15rem, 24vw, 19rem);
+}
+
+@keyframes home-marquee-scroll {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        /* Set by js/home.js to exactly one card group width. */
+        transform: translateX(var(--home-marquee-shift, -50%));
+    }
+}
+
+/* Small screens swipe through the cards instead of watching them move. */
+@media (max-width: 767.98px) {
+    .home-marquee {
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        padding-block: 0.5rem 1rem;
+        /* The row is full-bleed, so keep the cards off the screen edge on phones. */
+        padding-inline: 0.75rem;
+    }
+
+    .home-marquee-running .home-marquee-track {
+        animation: none;
+    }
+
+    .home-marquee-group-copy {
+        display: none;
+    }
+
+    .home-marquee-card {
+        width: min(17rem, 80vw);
+        scroll-snap-align: start;
+    }
+}
+
+.home-page a:focus-visible,
+.home-page button:focus-visible {
+    outline: 3px solid rgba(246, 153, 63, 0.85);
+    outline-offset: 3px;
+}
+
+@media (min-width: 576px) {
+    .home-hero-actions .btn {
+        width: auto;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .home-hero-note {
+        right: 0.75rem;
+        bottom: 0.75rem;
+        padding: 0.65rem 0.85rem;
+    }
+
+    .home-hero-note-value {
+        font-size: 0.95rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-page .home-btn,
+    .home-page .btn-outline-primary.home-btn::before,
+    .home-step-card {
+        transition: none;
+    }
+
+    .home-step-card::before {
+        animation: none;
+    }
+
+    .home-page .home-btn:hover,
+    .home-page .home-btn:focus-visible,
+    .home-step-card:hover {
+        transform: none;
+    }
+
+    /* No drifting cards: the row becomes a normal horizontal scroller. */
+    .home-marquee {
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+
+    .home-marquee-running .home-marquee-track {
+        animation: none;
+    }
+}
+
+/*
+ * js/home.js adds is-motion-paused to a home section while it is off screen, so
+ * its continuous animations stop instead of competing with the visible content.
+ */
+.home-page .is-motion-paused .home-hero-img,
+.home-page .is-motion-paused .home-step-card::before,
+.home-page .is-motion-paused .home-marquee-track {
+    animation-play-state: paused;
+}
+
+/* ------------------------------------------------------------------
+ * Recipe pages
+ * The detail actions and the compact secondary buttons (back link,
+ * add ingredient) use the same pill shape, weight and hover lift as
+ * the home page buttons and the recipe cards.
+ * ------------------------------------------------------------------ */
+.recipe-detail-btn {
+    padding: 0.8rem 1.6rem;
+    border-radius: 999px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease,
+        border-color 0.2s ease, color 0.2s ease;
+}
+
+/* The primary action carries the strongest shadow, like the home CTA. */
+.recipe-detail-btn.btn-primary {
+    box-shadow: 0 0.7rem 1.4rem rgba(0, 0, 0, 0.35);
+}
+
+.recipe-detail-btn.btn-outline-primary,
+.recipe-detail-btn.btn-outline-danger {
+    box-shadow: 0 0.35rem 1rem rgba(0, 0, 0, 0.3);
+}
+
+.recipe-detail-btn:hover,
+.recipe-detail-btn:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 0.95rem 1.8rem rgba(0, 0, 0, 0.45);
+}
+
+/* Compact pill for secondary actions, such as the back link. */
+.recipe-pill-btn {
+    padding: 0.55rem 1.15rem;
+    border-radius: 999px;
+    font-weight: 700;
+    box-shadow: 0 0.35rem 1rem rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease,
+        border-color 0.2s ease, color 0.2s ease;
+}
+
+.recipe-pill-btn:hover,
+.recipe-pill-btn:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 0.7rem 1.4rem rgba(0, 0, 0, 0.4);
+}
+
+/* Description copied from the recipe card; keep it to a comfortable line length. */
+.recipe-detail-description {
+    max-width: 40rem;
+    line-height: 1.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .recipe-detail-btn,
+    .recipe-pill-btn {
+        transition: none;
+    }
+
+    .recipe-detail-btn:hover,
+    .recipe-detail-btn:focus-visible,
+    .recipe-pill-btn:hover,
+    .recipe-pill-btn:focus-visible {
+        transform: none;
+    }
+}
+
+/* ------------------------------------------------------------------
+ * Recipes page
+ * The source filter and the "New recipe" action are plain Bootstrap
+ * buttons, so they match the buttons used in the other views.
+ * ------------------------------------------------------------------ */
+
+/* Page selector: same green palette and focus treatment as the rest of the page. */
+#recipes-pagination .pagination {
+    --bs-pagination-color: #9fe3b9;
+    --bs-pagination-bg: transparent;
+    --bs-pagination-border-color: var(--bs-border-color);
+    --bs-pagination-hover-color: #10201a;
+    --bs-pagination-hover-bg: #9fe3b9;
+    --bs-pagination-hover-border-color: #9fe3b9;
+    --bs-pagination-focus-color: #10201a;
+    --bs-pagination-focus-bg: #9fe3b9;
+    --bs-pagination-focus-box-shadow: 0 0 0 0.25rem rgba(246, 153, 63, 0.35);
+    --bs-pagination-active-color: #fff;
+    --bs-pagination-active-bg: #2f855a;
+    --bs-pagination-active-border-color: #2f855a;
+    --bs-pagination-disabled-color: rgba(233, 240, 234, 0.45);
+    --bs-pagination-disabled-bg: transparent;
+    --bs-pagination-disabled-border-color: var(--bs-border-color);
+}
+
+#recipes-pagination .page-link {
+    font-weight: 600;
+}
+
+/* ------------------------------------------------------------------
+ * Login, register and recipe form
+ * These views share one rounded card on a tinted band. From the lg
+ * breakpoint up login and register add a green side panel; the recipe
+ * form uses the same card without it.
+ * ------------------------------------------------------------------ */
+.auth-page {
+    --auth-ink: #e9f0ea;
+    --auth-surface: #18221c;
+    --auth-line: rgba(255, 255, 255, 0.1);
+    --auth-accent-ink: #f6b26b;
+
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+}
+
+/*
+ * The auth views (and the recipe form, which reuses the auth layout) stretch
+ * between the header and the footer, so the tinted band reaches the footer
+ * instead of leaving an empty strip under the card.
+ */
+#view-login,
+#view-register,
+#view-recipe-form {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+}
+
+/* Same tinted band treatment as the home hero, without the rotation. */
+.auth-band {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+    justify-content: center;
+    padding-block: clamp(2rem, 5vw, 4rem);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: var(--fc-band-bg);
+    background-image: var(--fc-band-image);
+}
+
+.auth-card {
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 1.5rem;
+    background-color: var(--auth-surface);
+    box-shadow: 0 1.4rem 3rem rgba(0, 0, 0, 0.5);
+}
+
+/* Brand side panel; Bootstrap's d-none/d-lg-flex decides when it is shown. */
+.auth-aside {
+    flex-direction: column;
+    justify-content: center;
+    padding: 2.5rem;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: #143024;
+    background-image:
+        radial-gradient(circle at 12% 6%, rgba(246, 153, 63, 0.22), transparent 42%),
+        linear-gradient(160deg, #1b4332 0%, #143024 62%, #0f2419 100%);
+}
+
+.auth-eyebrow {
+    color: var(--auth-accent-ink);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.auth-aside-title {
+    color: #f7f2e7;
+    font-family: var(--fc-font-display);
+    font-size: clamp(1.6rem, 2.4vw, 2rem);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1.12;
+    text-wrap: balance;
+}
+
+.auth-aside-text {
+    color: rgba(233, 240, 234, 0.78);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.auth-points li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    color: rgba(233, 240, 234, 0.85);
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+.auth-points li + li {
+    margin-top: 0.7rem;
+}
+
+.auth-point-mark {
+    display: inline-grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 999px;
+    background-color: rgba(143, 223, 174, 0.16);
+    color: #8fdfae;
+    font-size: 0.68rem;
+    font-weight: 800;
+}
+
+.auth-title {
+    color: var(--auth-ink);
+    font-size: clamp(1.75rem, 3vw, 2.15rem);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1.1;
+}
+
+/* Roomier, rounded inputs so the forms match the home page buttons. */
+.auth-form .form-label {
+    margin-bottom: 0.4rem;
+    color: #dbe7de;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.auth-form .form-control {
+    padding: 0.75rem 0.95rem;
+    border-color: rgba(255, 255, 255, 0.16);
+    border-radius: 0.8rem;
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+.auth-form .form-control:focus {
+    border-color: rgba(143, 223, 174, 0.7);
+    background-color: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 0 0.25rem rgba(47, 133, 90, 0.35);
+}
+
+/* Selects match the inputs; the right padding keeps room for the arrow. */
+.auth-form .form-select {
+    padding: 0.75rem 2.25rem 0.75rem 0.95rem;
+    border-color: rgba(255, 255, 255, 0.16);
+    border-radius: 0.8rem;
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+.auth-form .form-select:focus {
+    border-color: rgba(143, 223, 174, 0.7);
+    background-color: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 0 0.25rem rgba(47, 133, 90, 0.35);
+}
+
+.auth-check .form-check-input {
+    border-color: rgba(255, 255, 255, 0.28);
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.auth-check .form-check-input:checked {
+    border-color: #2f855a;
+    background-color: #2f855a;
+}
+
+.auth-check .form-check-input:focus {
+    border-color: rgba(143, 223, 174, 0.7);
+    box-shadow: 0 0 0 0.25rem rgba(47, 133, 90, 0.35);
+}
+
+.auth-check .form-check-label {
+    color: #dbe7de;
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+
+/* Primary action as a pill, like the calls to action on the home page. */
+.auth-page .auth-submit {
+    padding: 0.85rem 1.5rem;
+    border-radius: 999px;
+    font-weight: 700;
+    box-shadow: 0 0.7rem 1.4rem rgba(0, 0, 0, 0.35);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-page .auth-submit:hover,
+.auth-page .auth-submit:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 0.95rem 1.8rem rgba(0, 0, 0, 0.45);
+}
+
+/* Link to the other auth view, separated from the form by a thin rule. */
+.auth-switch {
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--auth-line);
+    color: var(--fc-muted);
+}
+
+/*
+ * Register has one more field than login, so its band and fields are a
+ * little tighter. That keeps the whole form visible on a laptop screen.
+ */
+.auth-page-compact .auth-band {
+    padding-block: 1rem;
+}
+
+.auth-page-compact .auth-title {
+    font-size: clamp(1.7rem, 2.8vw, 2.05rem);
+}
+
+.auth-page-compact .auth-form .form-label {
+    margin-bottom: 0.25rem;
+}
+
+.auth-page-compact .auth-form .form-control {
+    padding: 0.6rem 0.85rem;
+}
+
+.auth-page-compact .auth-form .form-text {
+    margin-top: 0.2rem;
+}
+
+.auth-page-compact .auth-submit {
+    padding-block: 0.75rem;
+}
+
+.auth-page-compact .auth-switch {
+    padding-top: 1rem;
+}
+
+.auth-page a:focus-visible,
+.auth-page button:focus-visible {
+    outline: 3px solid rgba(246, 153, 63, 0.85);
+    outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .auth-page .auth-submit {
+        transition: none;
+    }
+
+    .auth-page .auth-submit:hover,
+    .auth-page .auth-submit:focus-visible {
+        transform: none;
+    }
 }
 
 /* Each view keeps a comfortable height while its content is still short. */
@@ -52,13 +1666,22 @@
     min-height: 60vh;
 }
 
-/* Placeholder box for recipe images (no external images are allowed). */
-.recipe-thumb {
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--bs-secondary-bg);
-    border-radius: 0.5rem;
+/*
+ * Every view except Home, Login and Register sits on the same tinted band as
+ * the auth pages. The router wraps each fragment in #view-<name>, so the
+ * background is set on that wrapper: it stretches from the header down to the
+ * footer, even when the view content is shorter than the screen (e.g. 404).
+ */
+#view-recipes,
+#view-recipe,
+#view-recipe-form,
+#view-discover,
+#view-planner,
+#view-profile,
+#view-admin-categories,
+#view-admin-users,
+#view-404 {
+    flex: 1 0 auto;
+    background-color: var(--fc-band-bg);
+    background-image: var(--fc-band-image);
 }

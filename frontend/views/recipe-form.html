@@ -1,4 +1,160 @@
-<div class="container py-4">
-    <h1 class="h2">Recipe form</h1>
-    <p class="text-body-secondary mb-0">Add a new recipe or edit an existing one here.</p>
+<!-- Recipe form view: create or edit a recipe. Reuses the login/register layout without the side panel; validation and ingredient rows are wired up in JavaScript later. -->
+<div class="auth-page">
+    <section class="auth-band" aria-labelledby="recipe-form-title">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 col-lg-8 col-xl-7">
+                    <a class="btn btn-outline-primary recipe-pill-btn mb-3" href="#recipes">
+                        <span aria-hidden="true">&larr;</span> Back to recipes
+                    </a>
+
+                    <div class="card auth-card">
+                        <div class="row g-0">
+                            <div class="col-12">
+                                <div class="auth-body d-flex flex-column justify-content-center h-100 p-4 p-sm-5">
+                                    <p class="auth-eyebrow mb-2">Recipe details</p>
+                                    <h1 class="auth-title mb-2" id="recipe-form-title">New recipe</h1>
+                                    <p class="text-body-secondary mb-4">
+                                        Fill in the details below so the recipe is ready for your planner.
+                                    </p>
+
+                                    <form id="recipe-form-form" class="needs-validation auth-form">
+                                        <div class="row g-3">
+                                            <div class="col-12">
+                                                <label class="form-label" for="recipe-form-name">Title</label>
+                                                <input class="form-control" type="text" id="recipe-form-name"
+                                                       required minlength="3" maxlength="100">
+                                            </div>
+
+                                            <div class="col-12 col-md-6">
+                                                <label class="form-label" for="recipe-form-category">Category</label>
+                                                <select class="form-select" id="recipe-form-category" required>
+                                                    <option value="" disabled selected>Select a category</option>
+                                                    <!-- STATIC-SAMPLE -->
+                                                    <option value="beef">Beef</option>
+                                                    <option value="breakfast">Breakfast</option>
+                                                    <option value="chicken">Chicken</option>
+                                                    <option value="dessert">Dessert</option>
+                                                    <option value="goat">Goat</option>
+                                                    <option value="lamb">Lamb</option>
+                                                    <option value="miscellaneous">Miscellaneous</option>
+                                                    <option value="pasta">Pasta</option>
+                                                    <option value="pork">Pork</option>
+                                                    <option value="seafood">Seafood</option>
+                                                    <option value="side">Side</option>
+                                                    <option value="starter">Starter</option>
+                                                    <option value="vegan">Vegan</option>
+                                                    <option value="vegetarian">Vegetarian</option>
+                                                    <!-- /STATIC-SAMPLE -->
+                                                </select>
+                                            </div>
+
+                                            <div class="col-12 col-sm-6 col-md-3">
+                                                <label class="form-label" for="recipe-form-prep-time">Prep time (minutes)</label>
+                                                <input class="form-control" type="number" id="recipe-form-prep-time"
+                                                       required min="1" max="600">
+                                            </div>
+
+                                            <div class="col-12 col-sm-6 col-md-3">
+                                                <label class="form-label" for="recipe-form-servings">Servings</label>
+                                                <input class="form-control" type="number" id="recipe-form-servings"
+                                                       required min="1" max="20">
+                                            </div>
+
+                                            <div class="col-12">
+                                                <label class="form-label" for="recipe-form-image-url">Image URL</label>
+                                                <input class="form-control" type="url" id="recipe-form-image-url"
+                                                       aria-describedby="recipe-form-image-url-help">
+                                                <div class="form-text" id="recipe-form-image-url-help">
+                                                    Optional. Link to a picture of the dish.
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12">
+                                                <label class="form-label" for="recipe-form-instructions">Instructions</label>
+                                                <textarea class="form-control" id="recipe-form-instructions" rows="8"
+                                                          required aria-describedby="recipe-form-instructions-help"></textarea>
+                                                <div class="form-text" id="recipe-form-instructions-help">
+                                                    One step per line.
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <hr class="my-4">
+
+                                        <h2 class="h5 mb-3">Ingredients</h2>
+
+                                        <div class="mb-3" id="recipe-form-ingredients">
+                                            <div class="row g-2 mb-2">
+                                                <div class="col-7">
+                                                    <input class="form-control" type="text"
+                                                           id="recipe-form-ingredient-name-1"
+                                                           placeholder="e.g. Spaghetti" aria-label="Ingredient name" required>
+                                                </div>
+                                                <div class="col-4">
+                                                    <input class="form-control" type="text"
+                                                           id="recipe-form-ingredient-measure-1"
+                                                           placeholder="e.g. 200 g" aria-label="Measure">
+                                                </div>
+                                                <div class="col-1">
+                                                    <button type="button" class="btn btn-outline-danger w-100 h-100 px-0"
+                                                            aria-label="Remove ingredient">&#10005;</button>
+                                                </div>
+                                            </div>
+
+                                            <div class="row g-2 mb-2">
+                                                <div class="col-7">
+                                                    <input class="form-control" type="text"
+                                                           id="recipe-form-ingredient-name-2"
+                                                           placeholder="e.g. Spaghetti" aria-label="Ingredient name">
+                                                </div>
+                                                <div class="col-4">
+                                                    <input class="form-control" type="text"
+                                                           id="recipe-form-ingredient-measure-2"
+                                                           placeholder="e.g. 200 g" aria-label="Measure">
+                                                </div>
+                                                <div class="col-1">
+                                                    <button type="button" class="btn btn-outline-danger w-100 h-100 px-0"
+                                                            aria-label="Remove ingredient">&#10005;</button>
+                                                </div>
+                                            </div>
+
+                                            <div class="row g-2 mb-2">
+                                                <div class="col-7">
+                                                    <input class="form-control" type="text"
+                                                           id="recipe-form-ingredient-name-3"
+                                                           placeholder="e.g. Spaghetti" aria-label="Ingredient name">
+                                                </div>
+                                                <div class="col-4">
+                                                    <input class="form-control" type="text"
+                                                           id="recipe-form-ingredient-measure-3"
+                                                           placeholder="e.g. 200 g" aria-label="Measure">
+                                                </div>
+                                                <div class="col-1">
+                                                    <button type="button" class="btn btn-outline-danger w-100 h-100 px-0"
+                                                            aria-label="Remove ingredient">&#10005;</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary recipe-pill-btn"
+                                                id="recipe-form-add-ingredient">
+                                            Add ingredient
+                                        </button>
+
+                                        <div class="d-flex flex-wrap justify-content-end gap-2 mt-4">
+                                            <button type="button" class="btn btn-primary auth-submit"
+                                                    id="recipe-form-save">Save recipe</button>
+                                            <a class="btn btn-outline-primary auth-submit" href="#recipes"
+                                               id="recipe-form-cancel">Cancel</a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 </div>

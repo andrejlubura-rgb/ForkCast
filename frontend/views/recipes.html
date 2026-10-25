@@ -1,4 +1,234 @@
+<!-- Recipes view: search, category filter, source tabs and a static recipe grid (sample data replaced in Milestone 4). -->
 <div class="container py-4">
-    <h1 class="h2">Recipes</h1>
-    <p class="text-body-secondary mb-0">Browse and manage your saved recipes.</p>
+    <h1 class="mb-3">Recipes</h1>
+
+    <div class="row g-2 mb-3">
+        <div class="col-12 col-sm-4 col-lg-3">
+            <label class="visually-hidden" for="recipes-search">Search recipes</label>
+            <input class="form-control" type="search" id="recipes-search" placeholder="Search recipes...">
+        </div>
+        <div class="col-12 col-sm-4 col-lg-3">
+            <label class="visually-hidden" for="recipes-category">Filter by category</label>
+            <select class="form-select" id="recipes-category">
+                <!-- STATIC-SAMPLE -->
+                <option value="">All categories</option>
+                <option value="beef">Beef</option>
+                <option value="breakfast">Breakfast</option>
+                <option value="chicken">Chicken</option>
+                <option value="dessert">Dessert</option>
+                <option value="goat">Goat</option>
+                <option value="lamb">Lamb</option>
+                <option value="miscellaneous">Miscellaneous</option>
+                <option value="pasta">Pasta</option>
+                <option value="pork">Pork</option>
+                <option value="seafood">Seafood</option>
+                <option value="side">Side</option>
+                <option value="starter">Starter</option>
+                <option value="vegan">Vegan</option>
+                <option value="vegetarian">Vegetarian</option>
+                <!-- /STATIC-SAMPLE -->
+            </select>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+        <nav class="d-flex flex-wrap gap-2" aria-label="Recipe source">
+            <a class="btn btn-primary" href="#recipes" id="recipes-tab-all" aria-current="page">All recipes</a>
+            <a class="btn btn-outline-primary" href="#recipes" id="recipes-tab-mine">My recipes</a>
+        </nav>
+        <a class="btn btn-primary" href="#recipe-form" id="recipes-new">New recipe</a>
+    </div>
+
+    <!-- STATIC-SAMPLE -->
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4" id="recipes-grid">
+        <div class="col">
+            <article class="card h-100 recipe-card">
+                <div class="recipe-card-media">
+                    <img class="recipe-card-img" src="assets/images/meals/spaghetti-carbonara.jpg" alt=""
+                         width="700" height="700" loading="lazy" decoding="async">
+                </div>
+                <div class="card-body d-flex flex-column p-4">
+                    <h2 class="h5 recipe-card-title mb-2">Spaghetti Carbonara</h2>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <span class="badge recipe-card-badge">Pasta</span>
+                        <span class="badge recipe-card-badge recipe-card-badge-alt">TheMealDB</span>
+                    </div>
+                    <p class="text-body-secondary small mb-3">
+                        A Roman classic with pancetta, eggs and Parmesan, ready in about 25 minutes.
+                    </p>
+                    <p class="recipe-card-meta small mb-4 mt-auto">25 min &middot; 2 servings</p>
+                    <a class="btn btn-primary recipe-card-action w-100" href="#recipe">View recipe</a>
+                </div>
+            </article>
+        </div>
+
+        <div class="col">
+            <article class="card h-100 recipe-card">
+                <div class="recipe-card-media">
+                    <img class="recipe-card-img" src="assets/images/meals/chicken-curry.jpg" alt=""
+                         width="700" height="700" loading="lazy" decoding="async">
+                </div>
+                <div class="card-body d-flex flex-column p-4">
+                    <h2 class="h5 recipe-card-title mb-2">Chicken Curry</h2>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <span class="badge recipe-card-badge">Chicken</span>
+                        <span class="badge recipe-card-badge">My recipe</span>
+                    </div>
+                    <p class="text-body-secondary small mb-3">
+                        A warming curry with tender chicken and fragrant spices, served with rice.
+                    </p>
+                    <p class="recipe-card-meta small mb-4 mt-auto">45 min &middot; 4 servings</p>
+                    <a class="btn btn-primary recipe-card-action w-100" href="#recipe">View recipe</a>
+                </div>
+            </article>
+        </div>
+
+        <div class="col">
+            <article class="card h-100 recipe-card">
+                <div class="recipe-card-media">
+                    <img class="recipe-card-img" src="assets/images/meals/greek-salad.jpg" alt=""
+                         width="700" height="700" loading="lazy" decoding="async">
+                </div>
+                <div class="card-body d-flex flex-column p-4">
+                    <h2 class="h5 recipe-card-title mb-2">Greek Salad</h2>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <span class="badge recipe-card-badge">Vegetarian</span>
+                        <span class="badge recipe-card-badge">My recipe</span>
+                    </div>
+                    <p class="text-body-secondary small mb-3">
+                        Crisp cucumber, tomatoes, red onion and feta with a simple olive oil dressing.
+                    </p>
+                    <p class="recipe-card-meta small mb-4 mt-auto">15 min &middot; 2 servings</p>
+                    <a class="btn btn-primary recipe-card-action w-100" href="#recipe">View recipe</a>
+                </div>
+            </article>
+        </div>
+
+        <div class="col">
+            <article class="card h-100 recipe-card">
+                <div class="recipe-card-media">
+                    <img class="recipe-card-img" src="assets/images/meals/fluffy-pancakes.jpg" alt=""
+                         width="700" height="700" loading="lazy" decoding="async">
+                </div>
+                <div class="card-body d-flex flex-column p-4">
+                    <h2 class="h5 recipe-card-title mb-2">Fluffy Pancakes</h2>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <span class="badge recipe-card-badge">Breakfast</span>
+                        <span class="badge recipe-card-badge">My recipe</span>
+                    </div>
+                    <p class="text-body-secondary small mb-3">
+                        Light, fluffy pancakes stacked high and served with butter and maple syrup.
+                    </p>
+                    <p class="recipe-card-meta small mb-4 mt-auto">20 min &middot; 4 servings</p>
+                    <a class="btn btn-primary recipe-card-action w-100" href="#recipe">View recipe</a>
+                </div>
+            </article>
+        </div>
+
+        <div class="col">
+            <article class="card h-100 recipe-card">
+                <div class="recipe-card-media">
+                    <img class="recipe-card-img" src="assets/images/meals/beef-tacos.jpg" alt=""
+                         width="700" height="700" loading="lazy" decoding="async">
+                </div>
+                <div class="card-body d-flex flex-column p-4">
+                    <h2 class="h5 recipe-card-title mb-2">Beef Tacos</h2>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <span class="badge recipe-card-badge">Beef</span>
+                        <span class="badge recipe-card-badge recipe-card-badge-alt">TheMealDB</span>
+                    </div>
+                    <p class="text-body-secondary small mb-3">
+                        Spiced beef, fresh salsa and cheese folded into warm tortillas.
+                    </p>
+                    <p class="recipe-card-meta small mb-4 mt-auto">30 min &middot; 4 servings</p>
+                    <a class="btn btn-primary recipe-card-action w-100" href="#recipe">View recipe</a>
+                </div>
+            </article>
+        </div>
+
+        <div class="col">
+            <article class="card h-100 recipe-card">
+                <div class="recipe-card-media">
+                    <img class="recipe-card-img" src="assets/images/meals/chocolate-brownies.jpg" alt=""
+                         width="700" height="700" loading="lazy" decoding="async">
+                </div>
+                <div class="card-body d-flex flex-column p-4">
+                    <h2 class="h5 recipe-card-title mb-2">Chocolate Brownies</h2>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <span class="badge recipe-card-badge">Dessert</span>
+                        <span class="badge recipe-card-badge recipe-card-badge-alt">TheMealDB</span>
+                    </div>
+                    <p class="text-body-secondary small mb-3">
+                        Rich, fudgy chocolate brownies with a crackly top, perfect for sharing.
+                    </p>
+                    <p class="recipe-card-meta small mb-4 mt-auto">40 min &middot; 8 servings</p>
+                    <a class="btn btn-primary recipe-card-action w-100" href="#recipe">View recipe</a>
+                </div>
+            </article>
+        </div>
+
+        <div class="col">
+            <article class="card h-100 recipe-card">
+                <div class="recipe-card-media">
+                    <img class="recipe-card-img" src="assets/images/meals/grilled-salmon.jpg" alt=""
+                         width="700" height="700" loading="lazy" decoding="async">
+                </div>
+                <div class="card-body d-flex flex-column p-4">
+                    <h2 class="h5 recipe-card-title mb-2">Grilled Salmon</h2>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <span class="badge recipe-card-badge">Seafood</span>
+                        <span class="badge recipe-card-badge">My recipe</span>
+                    </div>
+                    <p class="text-body-secondary small mb-3">
+                        Salmon fillets grilled with lemon and herbs for a quick, flavourful dinner.
+                    </p>
+                    <p class="recipe-card-meta small mb-4 mt-auto">25 min &middot; 2 servings</p>
+                    <a class="btn btn-primary recipe-card-action w-100" href="#recipe">View recipe</a>
+                </div>
+            </article>
+        </div>
+
+        <div class="col">
+            <article class="card h-100 recipe-card">
+                <div class="recipe-card-media">
+                    <img class="recipe-card-img" src="assets/images/meals/veggie-stir-fry.jpg" alt=""
+                         width="700" height="700" loading="lazy" decoding="async">
+                </div>
+                <div class="card-body d-flex flex-column p-4">
+                    <h2 class="h5 recipe-card-title mb-2">Veggie Stir-fry</h2>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <span class="badge recipe-card-badge">Vegan</span>
+                        <span class="badge recipe-card-badge">My recipe</span>
+                    </div>
+                    <p class="text-body-secondary small mb-3">
+                        Crisp vegetables tossed in a savoury sauce and on the table in 20 minutes.
+                    </p>
+                    <p class="recipe-card-meta small mb-4 mt-auto">20 min &middot; 3 servings</p>
+                    <a class="btn btn-primary recipe-card-action w-100" href="#recipe">View recipe</a>
+                </div>
+            </article>
+        </div>
+    </div>
+    <!-- /STATIC-SAMPLE -->
+
+    <div class="alert alert-info d-none mt-4 mb-0" id="recipes-empty">
+        No recipes found. Try another search or add your own.
+    </div>
+
+    <nav class="mt-4" aria-label="Recipe pages" id="recipes-pagination">
+        <ul class="pagination justify-content-center mb-0">
+            <li class="page-item disabled">
+                <span class="page-link">Previous</span>
+            </li>
+            <li class="page-item active" aria-current="page">
+                <a class="page-link" href="#recipes">1</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="#recipes">2</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="#recipes">3</a>
+            </li>
+        </ul>
+    </nav>
 </div>

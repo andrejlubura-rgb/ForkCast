@@ -1,4 +1,73 @@
-<div class="container py-4">
-    <h1 class="h2">Login</h1>
-    <p class="text-body-secondary mb-0">Sign in to your ForkCast account.</p>
+<!-- Login view. Uses native HTML5 validation only; the submit is wired to the API in Milestone 4. -->
+<div class="auth-page">
+    <section class="auth-band" aria-labelledby="login-title">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 col-lg-10 col-xl-9">
+                    <div class="card auth-card">
+                        <div class="row g-0">
+                            <div class="col-lg-5 auth-aside d-none d-lg-flex">
+                                <p class="auth-eyebrow mb-2">Welcome to ForkCast</p>
+                                <p class="auth-aside-title mb-3">Plan your week, one plate at a time.</p>
+                                <p class="auth-aside-text mb-4">
+                                    Save your favourite recipes, fill your planner and let ForkCast build the
+                                    shopping list.
+                                </p>
+                                <ul class="auth-points list-unstyled mb-0">
+                                    <li>
+                                        <span class="auth-point-mark" aria-hidden="true">&#10003;</span>
+                                        Your recipes in one place
+                                    </li>
+                                    <li>
+                                        <span class="auth-point-mark" aria-hidden="true">&#10003;</span>
+                                        Breakfast, lunch and dinner slots
+                                    </li>
+                                    <li>
+                                        <span class="auth-point-mark" aria-hidden="true">&#10003;</span>
+                                        A shopping list from your plan
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div class="col-12 col-lg-7">
+                                <div class="auth-body d-flex flex-column justify-content-center h-100 p-4 p-sm-5">
+                                    <p class="auth-eyebrow mb-2">Welcome back</p>
+                                    <h1 class="auth-title mb-2" id="login-title">Log in to your account</h1>
+                                    <p class="text-body-secondary mb-4">
+                                        Pick up where you left off and finish planning your week.
+                                    </p>
+
+                                    <form id="login-form" class="needs-validation auth-form">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="login-email">Email</label>
+                                            <input class="form-control" type="email" id="login-email" name="email"
+                                                   autocomplete="email" required>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label" for="login-password">Password</label>
+                                            <input class="form-control" type="password" id="login-password"
+                                                   name="password" autocomplete="current-password" required>
+                                        </div>
+
+                                        <div class="form-check auth-check mb-4">
+                                            <input class="form-check-input" type="checkbox" value="1"
+                                                   id="login-keep-signed-in" name="keep-signed-in">
+                                            <label class="form-check-label" for="login-keep-signed-in">Keep me signed in</label>
+                                        </div>
+
+                                        <button class="btn btn-primary w-100 auth-submit" type="submit">Log in</button>
+                                    </form>
+
+                                    <p class="auth-switch text-center small mt-4 mb-0">
+                                        New to ForkCast? <a href="#register">Create an account</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 </div>

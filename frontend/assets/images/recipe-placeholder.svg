@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+    <defs>
+        <linearGradient id="recipePlaceholderBg" x1="0" y1="0" x2="0.85" y2="1">
+            <stop offset="0" stop-color="#1f2b24"/>
+            <stop offset="1" stop-color="#141c17"/>
+        </linearGradient>
+        <radialGradient id="recipePlaceholderGlow" cx="0.5" cy="0.45" r="0.55">
+            <stop offset="0" stop-color="#8fdfae" stop-opacity="0.12"/>
+            <stop offset="1" stop-color="#8fdfae" stop-opacity="0"/>
+        </radialGradient>
+    </defs>
+
+    <rect width="800" height="600" fill="url(#recipePlaceholderBg)"/>
+    <rect width="800" height="600" fill="url(#recipePlaceholderGlow)"/>
+
+    <!-- Plate -->
+    <g fill="none" stroke-linecap="round">
+        <circle cx="400" cy="270" r="118" stroke="#4c5f53" stroke-width="8"/>
+        <circle cx="400" cy="270" r="86" stroke="#37453c" stroke-width="3"/>
+    </g>
+
+    <!-- Fork -->
+    <g fill="none" stroke="#5d7466" stroke-width="9" stroke-linecap="round">
+        <path d="M186 168v54"/>
+        <path d="M204 168v54"/>
+        <path d="M222 168v54"/>
+        <path d="M182 222h44"/>
+        <path d="M204 222v152"/>
+    </g>
+
+    <!-- Knife -->
+    <g fill="#5d7466">
+        <path d="M586 168c20 26 28 58 28 88v22h-28z"/>
+        <rect x="594" y="278" width="12" height="96" rx="6"/>
+    </g>
+
+    <!-- Caption -->
+    <text x="400" y="502" text-anchor="middle" fill="#8a9e90"
+          font-family="Inter, system-ui, sans-serif" font-size="26" font-weight="600"
+          letter-spacing="6">No image</text>
+</svg>

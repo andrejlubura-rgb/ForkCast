@@ -1,7 +1,7 @@
 # AGENTS.md
 
 ## Project
-MealMate: a meal planner where users save recipes (their own or imported from TheMealDB), plan their week and get an automatic shopping list.
+ForkCast: a meal planner where users save recipes (their own or imported from TheMealDB), plan their week and get an automatic shopping list.
 Roles: admin, user. Entities: users, categories, recipes, recipe_ingredients, meal_plans, planned_meals.
 
 ## Technology stack
@@ -52,6 +52,7 @@ Roles: admin, user. Entities: users, categories, recipes, recipe_ingredients, me
 - Do not read or edit backend/config/config.php, and do not edit files in backend/logs/.
 - Do not run git commit or git push; I do that myself.
 - Make small changes. At the end, list the changed files with one line each. Do not paste full code into the chat.
+- Do not test anything yourselves unless I state that.
 
 ## Current milestone
 Milestone 1: project structure, static SPA frontend, ERD draft, README draft. No backend code yet.
