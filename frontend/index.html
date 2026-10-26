@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="ForkCast is a meal planner: save recipes, plan your week and build a shopping list.">
+    <title>ForkCast</title>
+
+    <!-- Typefaces: Plus Jakarta Sans (headings) and Inter (body text) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap">
+
+    <!-- Bootstrap 5.3.3 and ForkCast styles -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg site-header" id="appHeader" data-bs-theme="dark"
+         aria-label="ForkCast main navigation">
+        <div class="container site-header-inner">
+            <a class="navbar-brand site-brand" href="#home">
+                <span class="site-brand-mark" aria-hidden="true"><span class="site-brand-mark-icon">🍴</span></span>
+                <span class="site-brand-text">
+                    <span class="site-brand-name">ForkCast</span>
+                    <span class="site-brand-tagline">meal planner</span>
+                </span>
+            </a>
+
+            <button class="navbar-toggler site-menu-toggle" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#appNavbar" aria-controls="appNavbar" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                <span class="site-menu-toggle-bar" aria-hidden="true"></span>
+                <span class="site-menu-toggle-bar" aria-hidden="true"></span>
+                <span class="site-menu-toggle-bar" aria-hidden="true"></span>
+            </button>
+
+            <div class="collapse navbar-collapse site-nav-panel" id="appNavbar">
+                <ul class="navbar-nav site-nav">
+                    <li class="nav-item">
+                        <a class="nav-link site-nav-link" href="#recipes" data-auth="user">Recipes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link site-nav-link" href="#discover" data-auth="user">Discover</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link site-nav-link" href="#planner" data-auth="user">Planner</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link site-nav-link" href="#profile" data-auth="user">Profile</a>
+                    </li>
+                    <li class="nav-item dropdown" data-role="admin">
+                        <button class="nav-link dropdown-toggle site-nav-link site-admin-toggle" type="button"
+                                id="appAdminMenu" data-bs-toggle="dropdown" data-bs-display="static"
+                                aria-expanded="false">Admin</button>
+                        <ul class="dropdown-menu dropdown-menu-end site-admin-menu" aria-labelledby="appAdminMenu">
+                            <li><a class="dropdown-item" href="#admin-categories">Categories</a></li>
+                            <li><a class="dropdown-item" href="#admin-users">Users</a></li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <div class="navbar-nav site-nav-actions">
+                    <a class="nav-link site-nav-link site-nav-login" href="#login" data-auth="guest">Login</a>
+                    <a class="nav-link site-nav-link site-nav-cta" href="#register" data-auth="guest">Register</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main id="app"></main>
+
+    <footer class="site-footer text-white">
+        <div class="container py-5">
+            <div class="row g-4 g-lg-5">
+                <div class="col-12 col-lg-4">
+                    <div class="site-footer-brand">
+                        <span class="site-brand-mark" aria-hidden="true"><span class="site-brand-mark-icon">🍴</span></span>
+                        <span class="site-footer-brand-text">
+                            <span class="site-footer-brand-name">ForkCast</span>
+                            <span class="site-footer-brand-tagline">meal planner</span>
+                        </span>
+                    </div>
+                    <p class="site-footer-about mb-0">
+                        Save your favourite recipes, plan the week and let ForkCast turn
+                        everything you planned into one shopping list.
+                    </p>
+                </div>
+
+                <div class="col-6 col-lg-2">
+                    <h2 class="site-footer-title h6">Plan</h2>
+                    <ul class="site-footer-links list-unstyled">
+                        <li><a href="#recipes">My recipes</a></li>
+                        <li><a href="#discover">Discover</a></li>
+                        <li><a href="#planner">Weekly planner</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-6 col-lg-2">
+                    <h2 class="site-footer-title h6">Account</h2>
+                    <ul class="site-footer-links list-unstyled">
+                        <li><a href="#profile">Profile</a></li>
+                        <li><a href="#login">Login</a></li>
+                        <li><a href="#register">Register</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-12 col-lg-4">
+                    <h2 class="site-footer-title h6">How ForkCast works</h2>
+                    <ul class="site-footer-links site-footer-steps list-unstyled">
+                        <li>Save your own recipes or import them from TheMealDB</li>
+                        <li>Fill the breakfast, lunch and dinner slots of your week</li>
+                        <li>Get a shopping list from everything you planned</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="site-footer-bar">
+            <div class="container d-flex align-items-center justify-content-between gap-3 py-3">
+                <p class="site-footer-copy mb-0 small">ForkCast - plan your week, one plate at a time</p>
+                <button class="site-back-to-top flex-shrink-0" type="button" id="siteBackToTop"
+                        aria-label="Back to top">
+                    <span aria-hidden="true">↑</span>
+                </button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap bundle, jQuery and the application scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/home.js"></script>
+    <script src="js/back-to-top.js"></script>
+</body>
+</html>

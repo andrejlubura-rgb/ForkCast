@@ -1,0 +1,287 @@
+<!-- Discover view: search and filter recipes from TheMealDB and import them (static sample data replaced in Milestone 4). -->
+<div class="container py-4">
+    <h1 class="mb-2">Discover</h1>
+    <p class="text-body-secondary mb-4">
+        Find recipes from TheMealDB and import the ones you like. Imported recipes are saved to your
+        <a href="#recipes">Recipes</a> page, ready for the planner.
+    </p>
+
+    <form class="card discover-panel mb-3" id="discover-filters" role="search" aria-label="Search TheMealDB">
+        <div class="card-body p-3 p-md-4">
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-lg-5">
+                    <label class="form-label" for="discover-search">Search recipes</label>
+                    <div class="input-group">
+                        <input class="form-control" type="search" id="discover-search"
+                               placeholder="Try chicken, pasta, curry...">
+                        <button class="btn btn-primary" type="submit" id="discover-search-submit">Search</button>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <label class="form-label" for="discover-category">Category</label>
+                    <select class="form-select" id="discover-category">
+                        <!-- STATIC-SAMPLE -->
+                        <option value="">All categories</option>
+                        <option value="beef">Beef</option>
+                        <option value="breakfast">Breakfast</option>
+                        <option value="chicken">Chicken</option>
+                        <option value="dessert">Dessert</option>
+                        <option value="goat">Goat</option>
+                        <option value="lamb">Lamb</option>
+                        <option value="miscellaneous">Miscellaneous</option>
+                        <option value="pasta">Pasta</option>
+                        <option value="pork">Pork</option>
+                        <option value="seafood">Seafood</option>
+                        <option value="side">Side</option>
+                        <option value="starter">Starter</option>
+                        <option value="vegan">Vegan</option>
+                        <option value="vegetarian">Vegetarian</option>
+                        <!-- /STATIC-SAMPLE -->
+                    </select>
+                </div>
+
+                <div class="col-12 col-sm-6 col-lg-2">
+                    <label class="form-label" for="discover-area">Cuisine</label>
+                    <select class="form-select" id="discover-area">
+                        <!-- STATIC-SAMPLE -->
+                        <option value="">All cuisines</option>
+                        <option value="american">American</option>
+                        <option value="british">British</option>
+                        <option value="canadian">Canadian</option>
+                        <option value="chinese">Chinese</option>
+                        <option value="croatian">Croatian</option>
+                        <option value="dutch">Dutch</option>
+                        <option value="egyptian">Egyptian</option>
+                        <option value="filipino">Filipino</option>
+                        <option value="french">French</option>
+                        <option value="greek">Greek</option>
+                        <option value="indian">Indian</option>
+                        <option value="irish">Irish</option>
+                        <option value="italian">Italian</option>
+                        <option value="jamaican">Jamaican</option>
+                        <option value="japanese">Japanese</option>
+                        <option value="kenyan">Kenyan</option>
+                        <option value="malaysian">Malaysian</option>
+                        <option value="mexican">Mexican</option>
+                        <option value="moroccan">Moroccan</option>
+                        <option value="polish">Polish</option>
+                        <option value="portuguese">Portuguese</option>
+                        <option value="russian">Russian</option>
+                        <option value="spanish">Spanish</option>
+                        <option value="thai">Thai</option>
+                        <option value="tunisian">Tunisian</option>
+                        <option value="turkish">Turkish</option>
+                        <option value="ukrainian">Ukrainian</option>
+                        <option value="uruguayan">Uruguayan</option>
+                        <option value="vietnamese">Vietnamese</option>
+                        <!-- /STATIC-SAMPLE -->
+                    </select>
+                </div>
+
+                <div class="col-12 col-lg-2">
+                    <button class="btn btn-outline-primary w-100" type="button" id="discover-clear">
+                        Clear filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+        <p class="text-body-secondary small mb-0" id="discover-count">
+            <!-- STATIC-SAMPLE -->8 recipes found on TheMealDB<!-- /STATIC-SAMPLE -->
+        </p>
+        <button class="btn btn-outline-primary" type="button" id="discover-random">
+            <span aria-hidden="true">&#127922;</span> Surprise me
+        </button>
+    </div>
+
+    <!-- STATIC-SAMPLE -->
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4" id="discover-grid">
+        <div class="col">
+            <article class="card h-100 recipe-card">
+                <div class="recipe-card-media">
+                    <img class="recipe-card-img" src="assets/images/meals/spaghetti-carbonara.jpg" alt=""
+                         width="700" height="700" loading="lazy" decoding="async">
+                </div>
+                <div class="card-body d-flex flex-column p-4">
+                    <h2 class="h5 recipe-card-title mb-2">Spaghetti alla Carbonara</h2>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <span class="badge recipe-card-badge">Pasta</span>
+                        <span class="badge recipe-card-badge recipe-card-badge-alt">TheMealDB</span>
+                    </div>
+                    <p class="text-body-secondary small mb-3">
+                        Spaghetti tossed with pancetta, egg and Parmesan, finished with plenty of black pepper.
+                    </p>
+                    <p class="recipe-card-meta small mb-4 mt-auto">Italian &middot; 8 ingredients</p>
+                    <button class="btn btn-primary w-100" type="button"
+                            aria-label="Import Spaghetti alla Carbonara">Import recipe</button>
+                </div>
+            </article>
+        </div>
+
+        <div class="col">
+            <article class="card h-100 recipe-card">
+                <div class="recipe-card-media">
+                    <img class="recipe-card-img" src="assets/images/meals/chicken-alfredo-primavera.jpg" alt=""
+                         width="700" height="700" loading="lazy" decoding="async">
+                </div>
+                <div class="card-body d-flex flex-column p-4">
+                    <h2 class="h5 recipe-card-title mb-2">Chicken Alfredo Primavera</h2>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <span class="badge recipe-card-badge">Chicken</span>
+                        <span class="badge recipe-card-badge recipe-card-badge-alt">TheMealDB</span>
+                    </div>
+                    <p class="text-body-secondary small mb-3">
+                        Creamy Alfredo pasta with chicken and seasonal vegetables, a weeknight favourite.
+                    </p>
+                    <p class="recipe-card-meta small mb-4 mt-auto">Italian &middot; 12 ingredients</p>
+                    <button class="btn btn-primary w-100" type="button"
+                            aria-label="Import Chicken Alfredo Primavera">Import recipe</button>
+                </div>
+            </article>
+        </div>
+
+        <div class="col">
+            <article class="card h-100 recipe-card">
+                <div class="recipe-card-media">
+                    <img class="recipe-card-img" src="assets/images/meals/chicken-curry.jpg" alt=""
+                         width="700" height="700" loading="lazy" decoding="async">
+                </div>
+                <div class="card-body d-flex flex-column p-4">
+                    <h2 class="h5 recipe-card-title mb-2">Katsu Chicken Curry</h2>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <span class="badge recipe-card-badge">Chicken</span>
+                        <span class="badge recipe-card-badge recipe-card-badge-alt">TheMealDB</span>
+                    </div>
+                    <p class="text-body-secondary small mb-3">
+                        Crisp breaded chicken with a mild, spiced curry sauce and steamed rice.
+                    </p>
+                    <p class="recipe-card-meta small mb-4 mt-auto">Japanese &middot; 14 ingredients</p>
+                    <button class="btn btn-primary w-100" type="button"
+                            aria-label="Import Katsu Chicken Curry">Import recipe</button>
+                </div>
+            </article>
+        </div>
+
+        <div class="col">
+            <article class="card h-100 recipe-card">
+                <div class="recipe-card-media">
+                    <img class="recipe-card-img" src="assets/images/meals/new-york-cheesecake.jpg" alt=""
+                         width="700" height="700" loading="lazy" decoding="async">
+                </div>
+                <div class="card-body d-flex flex-column p-4">
+                    <h2 class="h5 recipe-card-title mb-2">New York Cheesecake</h2>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <span class="badge recipe-card-badge">Dessert</span>
+                        <span class="badge recipe-card-badge recipe-card-badge-alt">TheMealDB</span>
+                    </div>
+                    <p class="text-body-secondary small mb-3">
+                        Rich, creamy baked cheesecake on a buttery biscuit base.
+                    </p>
+                    <p class="recipe-card-meta small mb-4 mt-auto">American &middot; 9 ingredients</p>
+                    <button class="btn btn-primary w-100" type="button"
+                            aria-label="Import New York Cheesecake">Import recipe</button>
+                </div>
+            </article>
+        </div>
+
+        <div class="col">
+            <article class="card h-100 recipe-card">
+                <div class="recipe-card-media">
+                    <img class="recipe-card-img" src="assets/images/meals/baked-salmon-fennel-tomatoes.jpg" alt=""
+                         width="700" height="700" loading="lazy" decoding="async">
+                </div>
+                <div class="card-body d-flex flex-column p-4">
+                    <h2 class="h5 recipe-card-title mb-2">Baked Salmon with Fennel &amp; Tomatoes</h2>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <span class="badge recipe-card-badge">Seafood</span>
+                        <span class="badge recipe-card-badge recipe-card-badge-alt">TheMealDB</span>
+                    </div>
+                    <p class="text-body-secondary small mb-3">
+                        Oven-baked salmon with fennel and sweet tomatoes, simple and full of flavour.
+                    </p>
+                    <p class="recipe-card-meta small mb-4 mt-auto">French &middot; 7 ingredients</p>
+                    <button class="btn btn-primary w-100" type="button"
+                            aria-label="Import Baked Salmon with Fennel and Tomatoes">Import recipe</button>
+                </div>
+            </article>
+        </div>
+
+        <div class="col">
+            <article class="card h-100 recipe-card">
+                <div class="recipe-card-media">
+                    <img class="recipe-card-img" src="assets/images/meals/fluffy-pancakes.jpg" alt=""
+                         width="700" height="700" loading="lazy" decoding="async">
+                </div>
+                <div class="card-body d-flex flex-column p-4">
+                    <h2 class="h5 recipe-card-title mb-2">Pancakes</h2>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <span class="badge recipe-card-badge">Breakfast</span>
+                        <span class="badge recipe-card-badge recipe-card-badge-alt">TheMealDB</span>
+                    </div>
+                    <p class="text-body-secondary small mb-3">
+                        Fluffy pancakes stacked high and served with butter and maple syrup.
+                    </p>
+                    <p class="recipe-card-meta small mb-4 mt-auto">American &middot; 7 ingredients</p>
+                    <button class="btn btn-primary w-100" type="button"
+                            aria-label="Import Pancakes">Import recipe</button>
+                </div>
+            </article>
+        </div>
+
+        <div class="col">
+            <article class="card h-100 recipe-card">
+                <div class="recipe-card-media">
+                    <img class="recipe-card-img" src="assets/images/meals/chocolate-brownies.jpg" alt=""
+                         width="700" height="700" loading="lazy" decoding="async">
+                </div>
+                <div class="card-body d-flex flex-column p-4">
+                    <h2 class="h5 recipe-card-title mb-2">Chocolate Raspberry Brownies</h2>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <span class="badge recipe-card-badge">Dessert</span>
+                        <span class="badge recipe-card-badge recipe-card-badge-alt">TheMealDB</span>
+                    </div>
+                    <p class="text-body-secondary small mb-3">
+                        Fudgy brownies with raspberries and a crackly top, perfect for sharing.
+                    </p>
+                    <p class="recipe-card-meta small mb-4 mt-auto">British &middot; 9 ingredients</p>
+                    <button class="btn btn-primary w-100" type="button"
+                            aria-label="Import Chocolate Raspberry Brownies">Import recipe</button>
+                </div>
+            </article>
+        </div>
+
+        <div class="col">
+            <article class="card h-100 recipe-card">
+                <div class="recipe-card-media">
+                    <img class="recipe-card-img" src="assets/images/meals/chicken-quinoa-greek-salad.jpg" alt=""
+                         width="700" height="700" loading="lazy" decoding="async">
+                </div>
+                <div class="card-body d-flex flex-column p-4">
+                    <h2 class="h5 recipe-card-title mb-2">Chicken Quinoa Greek Salad</h2>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <span class="badge recipe-card-badge">Chicken</span>
+                        <span class="badge recipe-card-badge recipe-card-badge-alt">TheMealDB</span>
+                    </div>
+                    <p class="text-body-secondary small mb-3">
+                        A fresh salad with quinoa, chicken and crunchy vegetables.
+                    </p>
+                    <p class="recipe-card-meta small mb-4 mt-auto">Greek &middot; 10 ingredients</p>
+                    <button class="btn btn-primary w-100" type="button"
+                            aria-label="Import Chicken Quinoa Greek Salad">Import recipe</button>
+                </div>
+            </article>
+        </div>
+    </div>
+    <!-- /STATIC-SAMPLE -->
+
+    <div class="alert alert-info d-none mt-4 mb-0" id="discover-empty">
+        No recipes found on TheMealDB. Try another search, category or cuisine.
+    </div>
+
+    <div class="alert alert-warning d-none mt-4 mb-0" id="discover-error" role="alert">
+        TheMealDB could not be reached right now. Please try again in a moment.
+    </div>
+</div>

@@ -1,0 +1,554 @@
+<!-- Home view: full-bleed hero, how it works and static sample sections (sample data is replaced in Milestone 4). -->
+<div class="home-page">
+    <!-- The hero sits outside the page container so its band spans the full viewport width. -->
+    <section id="home-hero" class="home-hero" aria-labelledby="home-hero-title">
+        <div class="container">
+            <div class="row align-items-center g-4 g-lg-5">
+                <div class="col-12 col-lg-6 col-xl-5">
+                    <h1 class="home-hero-title mb-3" id="home-hero-title">Plan your week, one plate at a time</h1>
+                    <p class="lead text-body-secondary mb-4">
+                        Save your favourite recipes, plan your week and build a shopping list in one place.
+                    </p>
+                    <div class="home-hero-actions d-flex flex-column flex-sm-row gap-3">
+                        <a class="btn btn-primary btn-lg" href="#recipes" id="home-hero-browse">Browse recipes</a>
+                        <a class="btn btn-outline-primary btn-lg" href="#planner" id="home-hero-plan">Plan my week</a>
+                    </div>
+                    <!-- STATIC-SAMPLE -->
+                    <ul class="home-hero-points list-unstyled d-flex flex-wrap gap-3 gap-sm-4 mt-4 mb-0">
+                        <li>
+                            <span class="home-hero-point-mark" aria-hidden="true">&#10003;</span>300+ recipes
+                        </li>
+                        <li>
+                            <span class="home-hero-point-mark" aria-hidden="true">&#10003;</span>One meal per slot
+                        </li>
+                        <li>
+                            <span class="home-hero-point-mark" aria-hidden="true">&#10003;</span>Automatic shopping list
+                        </li>
+                    </ul>
+                    <!-- /STATIC-SAMPLE -->
+                </div>
+
+                <div class="col-12 col-lg-6 col-xl-7">
+                    <figure class="home-hero-media mb-0">
+                        <!-- STATIC-SAMPLE -->
+                        <div class="home-hero-slides">
+                            <img class="home-hero-img" src="assets/images/meals/chicken-alfredo-primavera.jpg"
+                                 alt="Creamy chicken and vegetable pasta in a serving dish" width="700" height="700"
+                                 decoding="async">
+                            <img class="home-hero-img" src="assets/images/meals/spaghetti-carbonara.jpg"
+                                 alt="Spaghetti alla Carbonara finished with grated cheese and black pepper"
+                                 width="800" height="800" decoding="async">
+                            <img class="home-hero-img" src="assets/images/meals/chicken-quinoa-greek-salad.jpg"
+                                 alt="Chicken quinoa Greek salad with fresh vegetables" width="700" height="700"
+                                 decoding="async">
+                            <img class="home-hero-img" src="assets/images/meals/baked-salmon-fennel-tomatoes.jpg"
+                                 alt="Baked salmon with fennel and tomatoes" width="700" height="700"
+                                 decoding="async">
+                            <img class="home-hero-img" src="assets/images/meals/new-york-cheesecake.jpg"
+                                 alt="Slice of New York cheesecake on a plate" width="700" height="700"
+                                 decoding="async">
+                        </div>
+                        <figcaption class="home-hero-note">
+                            <span class="home-hero-note-label">This week</span>
+                            <span class="home-hero-note-value">7 meals planned</span>
+                        </figcaption>
+                        <!-- /STATIC-SAMPLE -->
+                    </figure>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container py-4 py-md-5">
+        <section id="home-how-it-works" class="home-section mb-4 mb-md-5" aria-labelledby="home-how-it-works-title">
+            <div class="row align-items-end g-3 mb-4">
+                <div class="col-12 col-lg-7">
+                    <p class="home-eyebrow mb-2">How it works</p>
+                    <h2 class="home-section-title mb-0" id="home-how-it-works-title">From saved recipe to shopping list</h2>
+                </div>
+                <div class="col-12 col-lg-5">
+                    <p class="text-body-secondary mb-0">
+                        Keep your favourite meals in one place, fill your week and let ForkCast collect the ingredients.
+                    </p>
+                </div>
+            </div>
+
+            <div class="row row-cols-1 row-cols-md-3 g-3 g-lg-4">
+                <div class="col">
+                    <article class="card home-step-card h-100">
+                        <div class="card-body p-4 p-lg-5">
+                            <span class="home-step-number" aria-hidden="true">01</span>
+                            <h3 class="h5 mt-3 mb-2">Discover</h3>
+                            <p class="text-body-secondary mb-0">
+                                Browse your own recipes or find new ideas from TheMealDB and save the ones you like.
+                            </p>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="col">
+                    <article class="card home-step-card h-100">
+                        <div class="card-body p-4 p-lg-5">
+                            <span class="home-step-number" aria-hidden="true">02</span>
+                            <h3 class="h5 mt-3 mb-2">Plan</h3>
+                            <p class="text-body-secondary mb-0">
+                                Fill your week with breakfast, lunch and dinner, one meal per slot.
+                            </p>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="col">
+                    <article class="card home-step-card h-100">
+                        <div class="card-body p-4 p-lg-5">
+                            <span class="home-step-number" aria-hidden="true">03</span>
+                            <h3 class="h5 mt-3 mb-2">Shop</h3>
+                            <p class="text-body-secondary mb-0">
+                                Get an automatic shopping list with all the ingredients you need for your plan.
+                            </p>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- The meal of the day is a full-bleed band, so it sits outside the page container. -->
+    <section id="home-meal-of-the-day" class="home-feature" aria-labelledby="home-meal-of-the-day-title">
+        <!-- STATIC-SAMPLE -->
+        <div class="home-feature-media">
+            <img class="home-feature-img" src="assets/images/meals/spaghetti-carbonara.jpg"
+                 alt="Spaghetti alla Carbonara finished with grated cheese and black pepper"
+                 width="800" height="800" decoding="async">
+        </div>
+
+        <div class="container home-feature-inner">
+            <div class="home-feature-content">
+                <h2 class="home-feature-kicker mb-3" id="home-meal-of-the-day-title">Meal of the day</h2>
+
+                <h3 class="home-feature-title mb-3">Spaghetti alla Carbonara</h3>
+                <p class="home-feature-text mb-4">
+                    A Roman classic: spaghetti tossed with pancetta, eggs and Parmesan, ready in about
+                    25 minutes and finished with plenty of black pepper.
+                </p>
+
+                <dl class="home-feature-meta">
+                    <div class="home-feature-meta-item">
+                        <dt class="home-meta-label">Prep</dt>
+                        <dd class="home-meta-value mb-0">25 min</dd>
+                    </div>
+                    <div class="home-feature-meta-item">
+                        <dt class="home-meta-label">Serves</dt>
+                        <dd class="home-meta-value mb-0">4</dd>
+                    </div>
+                    <div class="home-feature-meta-item home-feature-meta-level home-feature-meta-level-easy">
+                        <dt class="home-meta-label">Level</dt>
+                        <dd class="home-meta-value mb-0">Easy</dd>
+                    </div>
+                </dl>
+
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-3">
+                    <a class="btn btn-primary btn-lg" href="#recipe"
+                       id="home-meal-of-the-day-view">View recipe</a>
+                    <a class="btn btn-outline-primary btn-lg" href="#planner">Plan this meal</a>
+                </div>
+            </div>
+        </div>
+        <!-- /STATIC-SAMPLE -->
+    </section>
+
+    <!-- The card row runs edge to edge, so only the heading sits inside a container. -->
+    <section id="home-recently-added" class="home-section py-4 py-md-5" aria-labelledby="home-recently-added-title">
+        <div class="container">
+            <div class="d-flex flex-column flex-sm-row align-items-sm-end justify-content-between gap-3 mb-4">
+                <div>
+                    <p class="home-eyebrow mb-2">Fresh from the kitchen</p>
+                    <h2 class="home-section-title mb-0" id="home-recently-added-title">Recently added</h2>
+                </div>
+                <a class="btn btn-outline-primary" href="#recipes">Browse all recipes</a>
+            </div>
+        </div>
+
+        <!-- STATIC-SAMPLE -->
+        <!-- js/home.js repeats this group so the row loops without a visible gap. -->
+        <div class="home-marquee" id="home-recently-marquee">
+            <div class="home-marquee-track" id="home-recently-track">
+                <div class="home-marquee-group">
+                    <article class="card recipe-card home-marquee-card">
+                        <div class="recipe-card-media">
+                            <img class="recipe-card-img" src="assets/images/meals/spaghetti-carbonara.jpg"
+                                 alt="Spaghetti alla Carbonara finished with grated cheese and black pepper"
+                                 width="800" height="800" loading="lazy" decoding="async">
+                            <span class="badge recipe-card-badge">Pasta</span>
+                        </div>
+                        <div class="card-body d-flex flex-column p-4">
+                            <h3 class="h5 recipe-card-title mb-2">Spaghetti alla Carbonara</h3>
+                            <p class="text-body-secondary small mb-3">
+                                A Roman classic with pancetta, eggs and Parmesan, ready in about 25 minutes.
+                            </p>
+                            <p class="recipe-card-meta small mb-4 mt-auto">25 min, easy</p>
+                            <a class="btn btn-primary w-100" href="#recipe">View recipe</a>
+                        </div>
+                    </article>
+
+                    <article class="card recipe-card home-marquee-card">
+                        <div class="recipe-card-media">
+                            <img class="recipe-card-img" src="assets/images/meals/chicken-quinoa-greek-salad.jpg"
+                                 alt="Chicken quinoa Greek salad with fresh vegetables" width="700" height="700"
+                                 loading="lazy" decoding="async">
+                            <span class="badge recipe-card-badge">Chicken</span>
+                        </div>
+                        <div class="card-body d-flex flex-column p-4">
+                            <h3 class="h5 recipe-card-title mb-2">Chicken Quinoa Greek Salad</h3>
+                            <p class="text-body-secondary small mb-3">
+                                A fresh, protein-packed salad with quinoa, chicken and crunchy vegetables.
+                            </p>
+                            <p class="recipe-card-meta small mb-4 mt-auto">20 min, easy</p>
+                            <a class="btn btn-primary w-100" href="#recipe">View recipe</a>
+                        </div>
+                    </article>
+
+                    <article class="card recipe-card home-marquee-card">
+                        <div class="recipe-card-media">
+                            <img class="recipe-card-img" src="assets/images/meals/new-york-cheesecake.jpg"
+                                 alt="Slice of New York cheesecake on a plate" width="700" height="700"
+                                 loading="lazy" decoding="async">
+                            <span class="badge recipe-card-badge">Dessert</span>
+                        </div>
+                        <div class="card-body d-flex flex-column p-4">
+                            <h3 class="h5 recipe-card-title mb-2">New York Cheesecake</h3>
+                            <p class="text-body-secondary small mb-3">
+                                Rich, creamy baked cheesecake with a buttery biscuit base.
+                            </p>
+                            <p class="recipe-card-meta small mb-4 mt-auto">90 min, medium</p>
+                            <a class="btn btn-primary w-100" href="#recipe">View recipe</a>
+                        </div>
+                    </article>
+
+                    <article class="card recipe-card home-marquee-card">
+                        <div class="recipe-card-media">
+                            <img class="recipe-card-img" src="assets/images/meals/baked-salmon-fennel-tomatoes.jpg"
+                                 alt="Baked salmon with fennel and tomatoes" width="700" height="700"
+                                 loading="lazy" decoding="async">
+                            <span class="badge recipe-card-badge">Seafood</span>
+                        </div>
+                        <div class="card-body d-flex flex-column p-4">
+                            <h3 class="h5 recipe-card-title mb-2">Baked Salmon with Fennel &amp; Tomatoes</h3>
+                            <p class="text-body-secondary small mb-3">
+                                Oven-baked salmon with fennel and sweet tomatoes, simple and full of flavour.
+                            </p>
+                            <p class="recipe-card-meta small mb-4 mt-auto">30 min, easy</p>
+                            <a class="btn btn-primary w-100" href="#recipe">View recipe</a>
+                        </div>
+                    </article>
+
+                    <article class="card recipe-card home-marquee-card">
+                        <div class="recipe-card-media">
+                            <img class="recipe-card-img" src="assets/images/meals/chicken-alfredo-primavera.jpg"
+                                 alt="Creamy chicken and vegetable pasta in a serving dish" width="700" height="700"
+                                 loading="lazy" decoding="async">
+                            <span class="badge recipe-card-badge">Chicken</span>
+                        </div>
+                        <div class="card-body d-flex flex-column p-4">
+                            <h3 class="h5 recipe-card-title mb-2">Chicken Alfredo Primavera</h3>
+                            <p class="text-body-secondary small mb-3">
+                                Creamy Alfredo pasta with chicken and seasonal vegetables, a weeknight favourite.
+                            </p>
+                            <p class="recipe-card-meta small mb-4 mt-auto">35 min, medium</p>
+                            <a class="btn btn-primary w-100" href="#recipe">View recipe</a>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+        <!-- /STATIC-SAMPLE -->
+    </section>
+
+    <!-- Planner preview: this week's coverage at a glance, with the same week and plan as the planner view. -->
+    <section id="home-planner" class="home-section py-4 py-md-5" aria-labelledby="home-planner-title">
+        <div class="container">
+            <div class="d-flex flex-column flex-sm-row align-items-sm-end justify-content-between gap-3 mb-4">
+                <div>
+                    <p class="home-eyebrow mb-2">Your week</p>
+                    <h2 class="home-section-title mb-0" id="home-planner-title">Planner</h2>
+                </div>
+                <a class="btn btn-outline-primary" href="#planner" id="home-planner-open">Open planner</a>
+            </div>
+
+            <div class="card home-planner-card">
+                <div class="card-body p-3 p-md-4">
+                    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 mb-3 pb-3 border-bottom">
+                        <!-- STATIC-SAMPLE -->
+                        <p class="mb-0">
+                            <span class="home-planner-week-caption d-block">Week of</span>
+                            <span class="home-planner-week-value">19 &ndash; 25 October 2026</span>
+                        </p>
+
+                        <div class="home-planner-progress">
+                            <div class="d-flex justify-content-between gap-3 small mb-1">
+                                <span class="text-body-secondary">Meals planned</span>
+                                <span class="fw-semibold">14 of 28</span>
+                            </div>
+                            <div class="progress" role="progressbar" aria-label="Meals planned this week"
+                                 aria-valuenow="14" aria-valuemin="0" aria-valuemax="28">
+                                <div class="progress-bar w-50"></div>
+                            </div>
+                        </div>
+                        <!-- /STATIC-SAMPLE -->
+                    </div>
+
+                    <!-- STATIC-SAMPLE -->
+                    <div class="row row-cols-2 row-cols-md-4 g-2 g-md-3">
+                        <div class="col">
+                            <article class="home-planner-day">
+                                <div class="d-flex flex-wrap align-items-baseline justify-content-between gap-2">
+                                    <h3 class="home-planner-day-name h6 mb-0">Monday</h3>
+                                    <span class="home-planner-day-date small">
+                                        <time datetime="2026-10-19">19 Oct</time>
+                                    </span>
+                                </div>
+                                <ul class="home-planner-slots list-unstyled d-flex flex-wrap gap-1 mt-2 mb-0">
+                                    <li class="home-planner-slot home-planner-slot-planned">Breakfast</li>
+                                    <li class="home-planner-slot home-planner-slot-planned">Lunch</li>
+                                    <li class="home-planner-slot home-planner-slot-planned">Dinner</li>
+                                    <li class="home-planner-slot home-planner-slot-free">Snack</li>
+                                </ul>
+                            </article>
+                        </div>
+
+                        <div class="col">
+                            <article class="home-planner-day">
+                                <div class="d-flex flex-wrap align-items-baseline justify-content-between gap-2">
+                                    <h3 class="home-planner-day-name h6 mb-0">Tuesday</h3>
+                                    <span class="home-planner-day-date small">
+                                        <time datetime="2026-10-20">20 Oct</time>
+                                    </span>
+                                </div>
+                                <ul class="home-planner-slots list-unstyled d-flex flex-wrap gap-1 mt-2 mb-0">
+                                    <li class="home-planner-slot home-planner-slot-free">Breakfast</li>
+                                    <li class="home-planner-slot home-planner-slot-planned">Lunch</li>
+                                    <li class="home-planner-slot home-planner-slot-planned">Dinner</li>
+                                    <li class="home-planner-slot home-planner-slot-planned">Snack</li>
+                                </ul>
+                            </article>
+                        </div>
+
+                        <div class="col">
+                            <article class="home-planner-day">
+                                <div class="d-flex flex-wrap align-items-baseline justify-content-between gap-2">
+                                    <h3 class="home-planner-day-name h6 mb-0">Wednesday</h3>
+                                    <span class="home-planner-day-date small">
+                                        <time datetime="2026-10-21">21 Oct</time>
+                                    </span>
+                                </div>
+                                <ul class="home-planner-slots list-unstyled d-flex flex-wrap gap-1 mt-2 mb-0">
+                                    <li class="home-planner-slot home-planner-slot-free">Breakfast</li>
+                                    <li class="home-planner-slot home-planner-slot-planned">Lunch</li>
+                                    <li class="home-planner-slot home-planner-slot-planned">Dinner</li>
+                                    <li class="home-planner-slot home-planner-slot-free">Snack</li>
+                                </ul>
+                            </article>
+                        </div>
+
+                        <div class="col">
+                            <article class="home-planner-day">
+                                <div class="d-flex flex-wrap align-items-baseline justify-content-between gap-2">
+                                    <h3 class="home-planner-day-name h6 mb-0">Thursday</h3>
+                                    <span class="home-planner-day-date small">
+                                        <time datetime="2026-10-22">22 Oct</time>
+                                    </span>
+                                </div>
+                                <ul class="home-planner-slots list-unstyled d-flex flex-wrap gap-1 mt-2 mb-0">
+                                    <li class="home-planner-slot home-planner-slot-planned">Breakfast</li>
+                                    <li class="home-planner-slot home-planner-slot-free">Lunch</li>
+                                    <li class="home-planner-slot home-planner-slot-planned">Dinner</li>
+                                    <li class="home-planner-slot home-planner-slot-free">Snack</li>
+                                </ul>
+                            </article>
+                        </div>
+
+                        <div class="col">
+                            <article class="home-planner-day">
+                                <div class="d-flex flex-wrap align-items-baseline justify-content-between gap-2">
+                                    <h3 class="home-planner-day-name h6 mb-0">Friday</h3>
+                                    <span class="home-planner-day-date small">
+                                        <time datetime="2026-10-23">23 Oct</time>
+                                    </span>
+                                </div>
+                                <ul class="home-planner-slots list-unstyled d-flex flex-wrap gap-1 mt-2 mb-0">
+                                    <li class="home-planner-slot home-planner-slot-free">Breakfast</li>
+                                    <li class="home-planner-slot home-planner-slot-planned">Lunch</li>
+                                    <li class="home-planner-slot home-planner-slot-planned">Dinner</li>
+                                    <li class="home-planner-slot home-planner-slot-free">Snack</li>
+                                </ul>
+                            </article>
+                        </div>
+
+                        <div class="col">
+                            <article class="home-planner-day">
+                                <div class="d-flex flex-wrap align-items-baseline justify-content-between gap-2">
+                                    <h3 class="home-planner-day-name h6 mb-0">Saturday</h3>
+                                    <span class="home-planner-day-date small">
+                                        <time datetime="2026-10-24">24 Oct</time>
+                                    </span>
+                                </div>
+                                <ul class="home-planner-slots list-unstyled d-flex flex-wrap gap-1 mt-2 mb-0">
+                                    <li class="home-planner-slot home-planner-slot-free">Breakfast</li>
+                                    <li class="home-planner-slot home-planner-slot-free">Lunch</li>
+                                    <li class="home-planner-slot home-planner-slot-planned">Dinner</li>
+                                    <li class="home-planner-slot home-planner-slot-planned">Snack</li>
+                                </ul>
+                            </article>
+                        </div>
+
+                        <div class="col">
+                            <article class="home-planner-day">
+                                <div class="d-flex flex-wrap align-items-baseline justify-content-between gap-2">
+                                    <h3 class="home-planner-day-name h6 mb-0">Sunday</h3>
+                                    <span class="home-planner-day-date small">
+                                        <time datetime="2026-10-25">25 Oct</time>
+                                    </span>
+                                </div>
+                                <ul class="home-planner-slots list-unstyled d-flex flex-wrap gap-1 mt-2 mb-0">
+                                    <li class="home-planner-slot home-planner-slot-free">Breakfast</li>
+                                    <li class="home-planner-slot home-planner-slot-free">Lunch</li>
+                                    <li class="home-planner-slot home-planner-slot-free">Dinner</li>
+                                    <li class="home-planner-slot home-planner-slot-free">Snack</li>
+                                </ul>
+                            </article>
+                        </div>
+                    </div>
+                    <!-- /STATIC-SAMPLE -->
+
+                    <p class="home-planner-legend small text-body-secondary mb-0 mt-3">
+                        Highlighted meals are already planned, dashed slots are still free.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ: the questions the planner raises most often, answered in an accordion. -->
+    <section id="home-faq" class="home-section home-faq pt-4 pt-md-5" aria-labelledby="home-faq-title">
+        <div class="container">
+            <div class="row g-4 g-lg-5">
+                <div class="col-12 col-lg-5">
+                    <p class="home-eyebrow mb-2">Good to know</p>
+                    <h2 class="home-section-title mb-3" id="home-faq-title">Frequently asked questions</h2>
+                    <p class="text-body-secondary mb-4">
+                        Short answers about saving recipes, filling your week and building the shopping list.
+                    </p>
+
+                    <div class="card home-faq-help">
+                        <div class="card-body p-4">
+                            <h3 class="home-faq-help-title h5 mb-2">Still hungry for answers?</h3>
+                            <p class="text-body-secondary small mb-3">
+                                Start with a recipe you already love and see how it lands in your week.
+                            </p>
+                            <a class="btn btn-outline-primary btn-sm" href="#discover" id="home-faq-browse">Discover recipes</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-7">
+                    <div class="accordion home-faq-accordion" id="home-faq-accordion">
+                        <div class="accordion-item">
+                            <h3 class="accordion-header" id="home-faq-heading-1">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#home-faq-collapse-1" aria-expanded="false"
+                                        aria-controls="home-faq-collapse-1">
+                                    Where do the recipes come from?
+                                    <span class="home-faq-icon" aria-hidden="true"></span>
+                                </button>
+                            </h3>
+                            <div class="accordion-collapse collapse" id="home-faq-collapse-1"
+                                 aria-labelledby="home-faq-heading-1" data-bs-parent="#home-faq-accordion">
+                                <div class="accordion-body">
+                                    From two places. You can write your own recipes and import meals from
+                                    TheMealDB on the Discover page. Imported meals stay in your collection,
+                                    so you can plan them again without searching for them twice.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h3 class="accordion-header" id="home-faq-heading-2">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#home-faq-collapse-2" aria-expanded="false"
+                                        aria-controls="home-faq-collapse-2">
+                                    Do I need an account to plan my week?
+                                    <span class="home-faq-icon" aria-hidden="true"></span>
+                                </button>
+                            </h3>
+                            <div class="accordion-collapse collapse" id="home-faq-collapse-2"
+                                 aria-labelledby="home-faq-heading-2" data-bs-parent="#home-faq-accordion">
+                                <div class="accordion-body">
+                                    Yes. Recipes, meal plans and shopping lists belong to your account, so log in
+                                    first. Every user plans their own week, and an admin also manages the
+                                    categories and users.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h3 class="accordion-header" id="home-faq-heading-3">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#home-faq-collapse-3" aria-expanded="false"
+                                        aria-controls="home-faq-collapse-3">
+                                    Can I plan more than one meal per slot?
+                                    <span class="home-faq-icon" aria-hidden="true"></span>
+                                </button>
+                            </h3>
+                            <div class="accordion-collapse collapse" id="home-faq-collapse-3"
+                                 aria-labelledby="home-faq-heading-3" data-bs-parent="#home-faq-accordion">
+                                <div class="accordion-body">
+                                    Each slot holds one meal. A day has breakfast, lunch, dinner and snack slots,
+                                    so plan another meal in the same slot to swap it. One meal per slot is what
+                                    keeps the shopping list accurate.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h3 class="accordion-header" id="home-faq-heading-4">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#home-faq-collapse-4" aria-expanded="false"
+                                        aria-controls="home-faq-collapse-4">
+                                    How is the shopping list built?
+                                    <span class="home-faq-icon" aria-hidden="true"></span>
+                                </button>
+                            </h3>
+                            <div class="accordion-collapse collapse" id="home-faq-collapse-4"
+                                 aria-labelledby="home-faq-heading-4" data-bs-parent="#home-faq-accordion">
+                                <div class="accordion-body">
+                                    ForkCast collects the ingredients of every planned meal and combines their
+                                    amounts, so you shop once for the whole week instead of once per recipe.
+                                    Change a meal in the planner and the list follows.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h3 class="accordion-header" id="home-faq-heading-5">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#home-faq-collapse-5" aria-expanded="false"
+                                        aria-controls="home-faq-collapse-5">
+                                    Can I edit or delete a recipe?
+                                    <span class="home-faq-icon" aria-hidden="true"></span>
+                                </button>
+                            </h3>
+                            <div class="accordion-collapse collapse" id="home-faq-collapse-5"
+                                 aria-labelledby="home-faq-heading-5" data-bs-parent="#home-faq-accordion">
+                                <div class="accordion-body">
+                                    You can edit the recipes you created, and an admin can edit any recipe. A recipe
+                                    used in a plan cannot be deleted until it is removed from that plan, so the
+                                    shopping list never loses an ingredient.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
