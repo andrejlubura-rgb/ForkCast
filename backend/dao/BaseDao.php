@@ -34,8 +34,9 @@ abstract class BaseDao
     {
         $statement = $this->connection->prepare($sql);
         $statement->execute($params);
+        $row = $statement->fetch();
         
-        return $statement[0] ?? null;
+        return $row === false ? null : $row;
     }
 
     // Returns one page of rows, with LIMIT and OFFSET bound as integers.
@@ -61,7 +62,7 @@ abstract class BaseDao
         $statement->execute();
         $row = $statement->fetch();
 
-        return $statement[0] ?? null;
+        return $row === false ? null : $row;
     }
 
     // Inserts the whitelisted columns and returns the id of the new row.
