@@ -14,7 +14,7 @@ Roles: admin, user. Entities: users, categories, recipes, recipe_ingredients, me
 
 ## Folder structure
 - frontend/: index.html, css/, js/ (router.js, app.js, services/), views/ (one HTML fragment per view), assets/
-- backend/: routes/, services/, dao/, middleware/, config/, logs/
+- backend/: routes/, services/, dao/, middleware/, config/, logs/, database/, tests/
 - docs/: AI_LOG.md, ERD.md and other documentation
 
 ## Frontend rules
@@ -39,6 +39,12 @@ Roles: admin, user. Entities: users, categories, recipes, recipe_ingredients, me
 - TheMealDB: 5 second timeout, handle {"meals": null} and errors, log failures, return a friendly message.
 - Database credentials, the JWT secret and the TheMealDB key live only in backend/config/config.php (not committed). Commit config.example.php instead.
 - Business rules: only the owner or an admin edits a recipe; a recipe used in a plan cannot be deleted; a category with recipes cannot be deleted; one meal per plan slot; importing the same TheMealDB meal twice returns the existing recipe.
+- backend/bootstrap.php registers an autoloader for backend/dao, backend/services and backend/middleware. Classes are never loaded with require inside other classes.
+- Database (backend/dao/Database.php) creates one PDO connection from backend/config/config.php (ERRMODE_EXCEPTION, FETCH_ASSOC, EMULATE_PREPARES off).
+- Every DAO extends BaseDao. Each DAO declares a whitelist of columns that insert() and update() may write.
+- DAO classes contain only SQL: no validation, no business rules, no HTTP, no echo. They return arrays.
+- Every value goes into the query as a bound parameter. Never concatenate values into SQL. Use a different named placeholder for each use of a value in one query.
+- Never select password_hash in joins or list queries unless the method is only for authentication.
 
 
 ## Conventions
@@ -54,5 +60,8 @@ Roles: admin, user. Entities: users, categories, recipes, recipe_ingredients, me
 - Make small changes. At the end, list the changed files with one line each. Do not paste full code into the chat.
 - Do not test anything yourselves unless I state that.
 
-## Current milestone
+
 Milestone 1: project structure, static SPA frontend, ERD draft, README draft. No backend code yet.
+
+## Current milestone
+Milestone 2: MySQL schema and sample data (backend/database/forkcast.sql) and the DAO layer (BaseDao plus one DAO per entity). No routes or services yet.
