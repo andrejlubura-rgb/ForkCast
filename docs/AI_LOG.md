@@ -51,3 +51,38 @@ the navbar should take it's full size.
 5. **The navbar shook when scrolling back to the top.** The sticky navbar shrinks when you scroll down and should protract again at the top of the page, but near the top it kept flickering between the two states.
    - *How I noticed:* I scrolled down the page and then back up, and the navbar started shaking as it protracted.
    - *How I fixed it:* I told the agent that the navbar had problems protracting and shook. The cause was in `js/navbar.js`: it switched the compact state at a single scroll position (8px), and the compact header is about 11px shorter, which moves the page content and changes the scroll position again, so the state flipped back and forth. The agent replaced the single threshold with two: the compact state is turned on only below 32px of scrolling is passed, and turned off only below 4px. Between the two values the current state is kept, so one small shift can no longer flip it.
+
+## Milestone 2
+
+### Tools and tasks
+
+- **OpenCode with DeepSeek V4.1 Flash Free** (Backend agent): the SQL schema and sample data, the database connection, the autoloader and `BaseDao`, the six DAO classes and the DAO smoke test.
+- **Claude (chat assistant, claude.ai):** the plan for this milestone.
+
+**1. Sample data**
+- Tool and agent: OpenCode, Backend agent.
+- Main prompt (shortened): "Create backend/database/seed.sql with INSERT statements only... use the exact text REPLACE_WITH_HASH for every password_hash."
+- Generated: 3 users, 14 categories, 8 recipes with ingredients, 2 meal plans and 8 planned meals.
+- Changed: I generated the password hashes myself with PHP's `password_hash()` and replaced the placeholders, because a language model cannot produce hashes that `password_verify()` will accept. 
+- Kept / rejected: Kept the resulting sample data that was checked.
+
+**2. Connection, autoloader and BaseDao**
+- Tool and agent: OpenCode, Backend agent. I asked for a plan first.
+- Main prompt (shortened): "Create backend/bootstrap.php (autoloader), backend/dao/Database.php (one PDO connection from config.php) and backend/dao/BaseDao.php with getAll, getById, insert, update, delete, using bound parameters and a whitelist of writable columns."
+- Generated: `bootstrap.php`, `Database.php` and `BaseDao.php`.
+- Decision: the agent asked whether `update()` may return `false` only when there is nothing valid to write, and `true` otherwise, even if no row changed. I confirmed this, because checking whether a row exists is the job of the service in the next milestone.
+- Kept / changed / rejected: As the code was checked, there were no mistakes noticed so the entire code was kept.
+
+**3. UserDao and CategoryDao**
+- Tool and agent: OpenCode, Backend agent.
+- Generated: `UserDao` and `CategoryDao` with their extra methods.
+- Kept / changed / rejected:
+
+**4. DAO smoke test**
+- Tool and agent: OpenCode, Backend agent.
+- Generated: `backend/tests/dao_smoke_test.php`, a command-line script that tests the DAOs inside a transaction and rolls it back.
+- Kept / changed / rejected: 
+
+### Where the AI was wrong
+
+- I reviewed the generated DAO code against AGENTS.md and my prompts. I checked for values concatenated into SQL, LIMIT and OFFSET binding, repeated placeholders, password_hash in list queries, business logic in the DAOs, PHP 8-only syntax, and extra files. I found no mistakes in the DeepSeek-generated code.
