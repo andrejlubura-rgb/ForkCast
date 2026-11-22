@@ -21,6 +21,18 @@ class RecipeIngredientDao extends BaseDao
         return $statement->fetchAll();
     }
 
+    // Counts the ingredient lines of one recipe.
+    public function countByRecipeId(int $recipeId): int
+    {
+        $sql = 'SELECT COUNT(*) FROM recipe_ingredients WHERE recipe_id = :recipe_id';
+
+        $statement = $this->connection->prepare($sql);
+        $statement->bindValue(':recipe_id', $recipeId, PDO::PARAM_INT);
+        $statement->execute();
+
+        return (int) $statement->fetchColumn();
+    }
+
     // Deletes every ingredient line of one recipe and returns the number of deleted rows.
     public function deleteByRecipeId(int $recipeId): int
     {
