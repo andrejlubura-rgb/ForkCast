@@ -127,4 +127,22 @@ abstract class BaseDao
 
         return $statement->rowCount() > 0;
     }
+
+    // Starts a database transaction on the shared connection.
+    public function beginTransaction(): bool
+    {
+        return $this->connection->beginTransaction();
+    }
+
+    // Commits the active transaction.
+    public function commit(): bool
+    {
+        return $this->connection->commit();
+    }
+
+    // Rolls back the active transaction.
+    public function rollBack(): bool
+    {
+        return $this->connection->rollBack();
+    }
 }
