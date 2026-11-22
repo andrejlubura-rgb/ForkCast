@@ -1,0 +1,79 @@
+<?php declare(strict_types=1);
+
+/**
+ * @license Apache 2.0
+ */
+
+namespace OpenApi\Spec;
+
+use OpenApi\Undefined;
+
+/**
+ * Describes the content payload for a specific media type.
+ *
+ * @see [Media Type Object](https://spec.openapis.org/oas/v3.1.1.html#media-type-object)
+ */
+#[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_METHOD | \Attribute::IS_REPEATABLE)]
+class MediaType extends AbstractAttribute
+{
+    /** The name this attribute is filed under in `components`; null for an inline one. */
+    public ?string $component = null;
+
+    /**
+     * @param string|null                                $mediaType      The media type identifier (e.g. 'application/json')
+     * @param Schema|null                                $schema         The schema defining the content
+     * @param mixed                                      $example        Example of the media type content
+     * @param list<Example>|null                         $examples       Examples of the media type content
+     * @param list<Encoding>|array<string,Encoding>|null $encoding       Encoding information for specific properties
+     * @param string|null                                $component      The name this is filed under in `components`, which makes it a reusable component
+     * @param array<string,mixed>|null                   $x              Vendor extensions (x-* properties)
+     * @param list<Attachable>|null                      $attachables    Reusable custom attachable attributes
+     * @param Fan|null                                   $fan            Where this attribute goes when more than one attribute could hold it
+     * @param Schema|null                                $itemSchema     The schema of each item of a sequential media type, from OpenAPI 3.2 on
+     * @param list<Encoding>|null                        $prefixEncoding The encodings of the leading parts of an unnamed multipart, by position, from OpenAPI 3.2 on
+     * @param Encoding|null                              $itemEncoding   The encoding of each part after them, from OpenAPI 3.2 on
+     */
+    public function __construct(
+        public ?string $mediaType = null,
+        public ?Schema $schema = null,
+        public mixed $example = Undefined::UNDEFINED,
+        public ?array $examples = null,
+        public ?array $encoding = null,
+        ?string $component = null,
+        ?array $x = null,
+        ?array $attachables = null,
+        ?Fan $fan = null,
+        public ?Schema $itemSchema = null,
+        public ?array $prefixEncoding = null,
+        public ?Encoding $itemEncoding = null,
+    ) {
+        $this->component = $component;
+
+        parent::__construct(x: $x, attachables: $attachables, fan: $fan);
+    }
+
+    public function isRoot(): bool
+    {
+        return $this->component !== null;
+    }
+
+    public function merge(): array
+    {
+        return [
+            Components::class => 'mediaTypes[]',
+            Response::class => 'content[]',
+            RequestBody::class => 'content[]',
+            Parameter::class => 'content[]',
+        ];
+    }
+
+    public function contained(): array
+    {
+        return [
+            Response::class => 'content[]',
+            RequestBody::class => 'content[]',
+            Parameter::class => 'content[]',
+            Header::class => 'content[]',
+        ];
+    }
+}

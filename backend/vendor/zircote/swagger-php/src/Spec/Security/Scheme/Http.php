@@ -1,0 +1,68 @@
+<?php declare(strict_types=1);
+
+/**
+ * @license Apache 2.0
+ */
+
+namespace OpenApi\Spec\Security\Scheme;
+
+use OpenApi\Spec as OA;
+
+/**
+ * An HTTP authentication security scheme (Basic, Bearer, etc.).
+ *
+ * Allows to shorten this:
+ *
+ * ```php
+ * #[OA\Security\Scheme(
+ *     component: 'bearerAuth',
+ *     type: 'http',
+ *     scheme: 'bearer',
+ *     bearerFormat: 'JWT',
+ * )]
+ * ```
+ *
+ * to this:
+ *
+ * ```php
+ * #[OA\Security\Scheme\Http(
+ *     component: 'bearerAuth',
+ *     scheme: 'bearer',
+ *     bearerFormat: 'JWT',
+ * )]
+ * ```
+ *
+ * @see [Security Scheme Object](https://spec.openapis.org/oas/v3.1.1.html#security-scheme-object)
+ */
+#[\Attribute(\Attribute::TARGET_CLASS | \Attribute::IS_REPEATABLE)]
+class Http extends OA\Security\Scheme
+{
+    /**
+     * @param array<string,mixed>|null $x
+     * @param list<OA\Attachable>|null $attachables
+     */
+    public function __construct(
+        ?string $securityScheme = null,
+        ?string $description = null,
+        ?string $scheme = null,
+        ?string $bearerFormat = null,
+        ?string $component = null,
+        ?array $x = null,
+        ?array $attachables = null,
+        ?OA\Fan $fan = null,
+        ?bool $deprecated = null,
+    ) {
+        parent::__construct(
+            securityScheme: $securityScheme,
+            type: OA\SchemeType::Http,
+            description: $description,
+            scheme: $scheme,
+            bearerFormat: $bearerFormat,
+            component: $component,
+            x: $x,
+            attachables: $attachables,
+            fan: $fan,
+            deprecated: $deprecated,
+        );
+    }
+}

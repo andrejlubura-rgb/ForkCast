@@ -1,0 +1,1872 @@
+<?php declare(strict_types=1);
+
+/**
+ * @license Apache 2.0
+ */
+
+namespace OpenApi\Compiler;
+
+use OpenApi\Contracts\AttributeInterface;
+use OpenApi\Contracts\CompilerInterface;
+use OpenApi\Loggers\CollectingLogger;
+use OpenApi\Spec as OA;
+use OpenApi\Specification;
+use OpenApi\Specification\ComponentName;
+use OpenApi\Specification\Walker;
+use OpenApi\Undefined;
+use OpenApi\Utils\SecurityRequirement;
+use Psr\Log\LoggerInterface;
+
+/**
+ * Compiles a Specification into an OpenAPI 3.1.x document array.
+ */
+class OpenApi31Compiler implements CompilerInterface
+{
+    /**
+     * The versions this compiler handles: any patch release of the minor.
+     */
+    protected const VERSION_PREFIX = '3.1.';
+
+    /**
+     * The methods a path item has an operation field for.
+     */
+    protected const OPERATION_METHODS = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'];
+
+    protected const OPERATION_REQUEST_BODY_METHODS = ['put', 'post', 'delete', 'patch'];
+
+    /**
+     * Every type the wire format accepts as input. `null` is included for 3.0 as well, where
+     * the compiler translates it to `nullable` rather than dropping it.
+     */
+    protected const SCHEMA_TYPES = ['string', 'number', 'integer', 'boolean', 'array', 'object', 'null'];
+
+    /** schema properties that are not keywords beside a `$ref`, or that compile into its form */
+    protected const NOT_REF_KEYWORDS = ['schema', 'component', 'ref', 'nullable', 'x', 'attachables'];
+
+    /** schema keywords whose `false` means the same as leaving them out */
+    protected const FALSE_BY_DEFAULT_KEYWORDS = ['deprecated', 'readOnly', 'writeOnly', 'uniqueItems'];
+
+    protected const RESPONSE_KEY = OA\Response::STATUS_CODE_PATTERN;
+
+    /**
+     * Maps nested in another object, as container => [property => the member field keying it].
+     * `Schema::$examples` is absent: it is the JSON Schema keyword, which takes a list.
+     *
+     * @var array<class-string<AttributeInterface>, array<string, string>>
+     */
+    protected const NESTED_MAPS = [
+        OA\Response::class => ['headers' => 'header', 'links' => 'link'],
+        OA\MediaType::class => ['examples' => 'example', 'encoding' => 'encoding'],
+        OA\Encoding::class => ['headers' => 'header', 'encodings' => 'encoding'],
+        OA\Parameter::class => ['examples' => 'example'],
+        OA\Header::class => ['examples' => 'example'],
+    ];
+
+    /**
+     * The properties this version cannot carry, as class => property names. A name may key a hint
+     * for the message instead. `filter()` leaves each out of the output, where it is written under
+     * its own name, and `validateUnsupportedProperties()` warns about it. Each compiler lists all
+     * of its own, and a property that is translated or has a check of its own is not listed.
+     *
+     * @var array<class-string<OA\AbstractAttribute|Specification>, array<int|string, string>>
+     */
+    protected const UNSUPPORTED_PROPERTIES = [
+        Specification::class => ['mediaTypes'],
+        OA\OpenApi::class => ['self'],
+        OA\Server::class => ['name'],
+        OA\Tag::class => ['summary', 'parent', 'kind'],
+        OA\Flow::class => ['deviceAuthorizationUrl'],
+        OA\MediaType::class => ['itemSchema', 'prefixEncoding', 'itemEncoding'],
+        OA\Encoding::class => ['encodings', 'prefixEncoding', 'itemEncoding'],
+        OA\Discriminator::class => ['defaultMapping'],
+        OA\Security\Scheme::class => ['deprecated', 'oauth2MetadataUrl'],
+        OA\Example::class => ['serializedValue'],
+    ];
+
+    /**
+     * The values this version cannot carry, as class => property => values. `filter()` leaves a
+     * listed value out, as it does a listed property, and `validateUnsupportedValues()` warns
+     * about it.
+     *
+     * @var array<class-string<OA\AbstractAttribute>, array<string, list<string>>>
+     */
+    protected const UNSUPPORTED_VALUES = [
+        OA\Flow::class => ['flow' => ['deviceAuthorization']],
+        OA\Parameter::class => ['in' => ['querystring'], 'style' => ['cookie']],
+    ];
+
+    protected CollectingLogger $logger;
+
+    /**
+     * The walker `validate()` shares between the checks, or null outside it.
+     */
+    private ?Walker $walker = null;
+
+    public function __construct(?LoggerInterface $logger = null)
+    {
+        $this->logger = new CollectingLogger($logger);
+    }
+
+    public function getVersion(): string
+    {
+        return '3.1.0';
+    }
+
+    public function supports(string $version): bool
+    {
+        return str_starts_with($version, static::VERSION_PREFIX);
+    }
+
+    /**
+     * Runs the checks in `validateSpecification()`, with their visits sharing one walk.
+     *
+     * The checks register their visits through `visit()`, and all of them run in one walk of the
+     * specification once `validateSpecification()` returns. A visitor must not change the
+     * specification, since the visitors after it share the walk. A check's messages keep their
+     * order; messages from different checks come in walk order.
+     *
+     * Add checks by overriding `validateSpecification()`, not this method: a check run from an
+     * overriding `validate()` outside it still works, but walks on its own.
+     */
+    public function validate(Specification $specification): array
+    {
+        $this->walker = $specification->getWalker();
+
+        try {
+            $this->validateSpecification($specification);
+
+            $this->walker->visitDeferred();
+        } finally {
+            $this->walker = null;
+        }
+
+        return $this->logger->entries();
+    }
+
+    public function compile(Specification $specification): array
+    {
+        $version = $specification->openapi->version ?? $this->getVersion();
+
+        return $this->filter([
+            'openapi' => $version,
+            // the list names the property, `self`, not the key
+            '$self' => $this->omitUnsupported(['self' => $specification->openapi->self], $specification->openapi)['self'] ?? null,
+            'info' => $specification->info instanceof OA\Info ? $this->compileInfo($specification->info) : null,
+            'servers' => array_map($this->compileServer(...), $specification->servers),
+            'paths' => $this->compilePaths($specification->operations, $specification->pathItems),
+            'components' => $this->compileComponents($specification),
+            'security' => $this->compileSecurity($specification->openapi->security ?? []),
+            'tags' => array_map($this->compileTag(...), $specification->tags),
+            'externalDocs' => $specification->externalDocs ? $this->compileExternalDocs($specification->externalDocs[0]) : null,
+            'webhooks' => $this->compileWebhooks($specification->operations),
+        ], $specification->openapi);
+    }
+
+    /**
+     * The checks `validate()` runs. An override calls its parent's and adds its own checks.
+     */
+    protected function validateSpecification(Specification $specification): void
+    {
+        if (!$specification->info instanceof OA\Info) {
+            $this->logger->error('Document is missing info');
+        } elseif ($specification->info->title === null) {
+            $this->logger->error('Info is missing title in ' . $specification->info->getSourceLocation());
+        }
+
+        $hasPaths = (bool) array_filter($specification->operations, fn (OA\Operation $op): bool => $op->path !== null);
+        $hasWebhooks = (bool) array_filter($specification->operations, fn (OA\Operation $op): bool => $op->webhook !== null);
+        $hasComponents = $specification->schemas || $specification->responses
+            || $specification->parameters || $specification->requestBodies
+            || $specification->headers || $specification->securitySchemes
+            || $specification->links || $specification->examples;
+
+        if (!$hasPaths && !$hasWebhooks && !$hasComponents) {
+            $this->logger->error('Document needs at least one of paths, webhooks or components');
+        }
+
+        if ($specification->info?->license instanceof OA\License) {
+            $license = $specification->info->license;
+            if ($license->url !== null && $license->identifier !== null) {
+                $this->logger->error('License url and identifier are mutually exclusive in ' . $license->getSourceLocation());
+            }
+        }
+
+        $this->validateSchemas($specification);
+
+        $this->validateOperations($specification);
+
+        $this->validateOperationIds($specification);
+
+        $this->validatePathParameters($specification);
+
+        $this->validateResponses($specification);
+
+        $this->validateMediaTypes($specification);
+
+        $this->validateNames($specification);
+
+        $this->validateUnsupportedProperties($specification, static::UNSUPPORTED_PROPERTIES);
+
+        $this->validateUnsupportedValues($specification, static::UNSUPPORTED_VALUES);
+
+        $this->validateRequirementExtensions($specification);
+
+        $this->validateNestedNames($specification);
+
+        $this->validateSchemaExamples($specification);
+
+        $this->validateReferenceSummaries($specification);
+
+        $this->validateExamples($specification);
+
+        $this->validateXmlNodeTypes($specification);
+    }
+
+    /**
+     * `dataValue` is new in 3.2, and before it is written as `value` where the example has
+     * neither `value` nor `externalValue`, which would conflict with it.
+     */
+    protected function validateExamples(Specification $specification): void
+    {
+        $this->visit($specification, OA\Example::class, function (OA\Example $example): void {
+            if ($example->dataValue === Undefined::UNDEFINED) {
+                return;
+            }
+
+            $subject = $example->example === null ? 'Example' : 'Example "' . $example->example . '"';
+            $action = $example->value === Undefined::UNDEFINED && $example->externalValue === null ? 'written as value' : 'omitted';
+            $this->logger->warning("{$subject} uses dataValue, not supported in OpenAPI " . substr($this->getVersion(), 0, 3) . ", {$action}"
+                . ($example->getReflector() instanceof \Reflector ? ' in ' . $example->getSourceLocation() : ''));
+        });
+    }
+
+    /**
+     * `nodeType` is new in 3.2, and before it is written as `attribute` or `wrapped` where they say
+     * the same. See `nodeTypeFields()`.
+     */
+    protected function validateXmlNodeTypes(Specification $specification): void
+    {
+        $this->visit($specification, OA\Schema::class, function (OA\Schema $schema): void {
+            if (!$schema->xml instanceof OA\Xml || $schema->xml->nodeType === null) {
+                return;
+            }
+
+            $fields = $this->nodeTypeFields($schema->xml, $schema);
+            if ($fields === []) {
+                return;
+            }
+
+            // a field set by hand wins, so the node type is then left out
+            $field = $fields === null ? null : array_key_first($fields);
+            $action = $field !== null && $schema->xml->{$field} === null ? "written as {$field}" : 'omitted';
+            $this->logger->warning("Xml uses nodeType \"{$schema->xml->nodeType}\", not supported in OpenAPI " . substr($this->getVersion(), 0, 3) . ", {$action}"
+                . ($schema->getReflector() instanceof \Reflector ? ' in ' . $schema->getSourceLocation() : ''));
+        });
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function compileInfo(OA\Info $info): array
+    {
+        return $this->filter([
+            'title' => $info->title,
+            'description' => $info->description,
+            'termsOfService' => $info->termsOfService,
+            'contact' => $info->contact instanceof OA\Contact ? $this->compileContact($info->contact) : null,
+            'license' => $info->license instanceof OA\License ? $this->compileLicense($info->license) : null,
+            'summary' => $info->summary,
+            'version' => $info->version,
+        ], $info);
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function compileContact(OA\Contact $contact): array
+    {
+        return $this->filter([
+            'name' => $contact->name,
+            'url' => $contact->url,
+            'email' => $contact->email,
+        ], $contact);
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function compileLicense(OA\License $license): array
+    {
+        return $this->filter([
+            'name' => $license->name,
+            'identifier' => $license->identifier,
+            'url' => $license->url,
+        ], $license);
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function compileServer(OA\Server $server): array
+    {
+        $variables = null;
+        if ($server->variables) {
+            $variables = [];
+            foreach ($server->variables as $variable) {
+                if ($variable->serverVariable !== null) {
+                    $variables[$variable->serverVariable] = $this->compileServerVariable($variable);
+                }
+            }
+            $variables = $variables ?: null;
+        }
+
+        return $this->filter([
+            'url' => $server->url,
+            'description' => $server->description,
+            'variables' => $variables,
+            'name' => $server->name,
+        ], $server);
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function compileServerVariable(OA\ServerVariable $variable): array
+    {
+        return $this->filter([
+            'default' => $variable->default,
+            'enum' => $variable->enum,
+            'description' => $variable->description,
+        ], $variable);
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function compileTag(OA\Tag $tag): array
+    {
+        return $this->filter([
+            'name' => $tag->name,
+            'summary' => $tag->summary,
+            'description' => $tag->description,
+            'externalDocs' => $tag->externalDocs instanceof OA\ExternalDocumentation ? $this->compileExternalDocs($tag->externalDocs) : null,
+            'parent' => $tag->parent,
+            'kind' => $tag->kind,
+        ], $tag);
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function compileExternalDocs(OA\ExternalDocumentation $docs): array
+    {
+        return $this->filter([
+            'url' => $docs->url,
+            'description' => $docs->description,
+        ], $docs);
+    }
+
+    /**
+     * Operations are keyed by path and method, path items by path, and one path holds both.
+     *
+     * The union puts a path item's own fields beside the method entries already written for that
+     * path. Which of two path items for one path survives is `Augmenter\Merge`'s to decide, before
+     * the compiler sees either.
+     *
+     * @param  list<OA\Operation>                          $operations
+     * @param  list<OA\PathItem>                           $pathItems
+     * @return array<string,array<string,mixed>|\stdClass>
+     */
+    protected function compilePaths(array $operations, array $pathItems = []): array
+    {
+        $paths = [];
+
+        foreach ($operations as $operation) {
+            if ($operation->path !== null && ($item = $this->addOperation($paths[$operation->path] ?? [], $operation)) !== []) {
+                $paths[$operation->path] = $item;
+            }
+        }
+
+        foreach ($pathItems as $pathItem) {
+            if ($pathItem->path === null || $pathItem->component !== null) {
+                continue;
+            }
+
+            // an empty path item is still a path
+            $paths[$pathItem->path] = (($paths[$pathItem->path] ?? []) + $this->compilePathItem($pathItem)) ?: new \stdClass();
+        }
+
+        return $paths;
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function compilePathItem(OA\PathItem $pathItem): array
+    {
+        return $this->filter([
+            '$ref' => $pathItem->ref,
+            'summary' => $pathItem->summary,
+            'description' => $pathItem->description,
+            'parameters' => $this->compileParameters($pathItem->parameters ?? []),
+            'servers' => array_map($this->compileServer(...), $pathItem->servers ?? []),
+        ], $pathItem);
+    }
+
+    /**
+     * @param  list<OA\Operation>                $operations
+     * @return array<string,array<string,mixed>>
+     */
+    protected function compileWebhooks(array $operations): array
+    {
+        $webhooks = [];
+
+        foreach ($operations as $operation) {
+            if ($operation->webhook !== null && ($item = $this->addOperation($webhooks[$operation->webhook] ?? [], $operation)) !== []) {
+                $webhooks[$operation->webhook] = $item;
+            }
+        }
+
+        return $webhooks;
+    }
+
+    /**
+     * Writes an operation into a path item, under its method. One with a method the version does
+     * not support is left out, which `validateOperations()` reports.
+     *
+     * @param  array<string,mixed> $item
+     * @return array<string,mixed>
+     */
+    protected function addOperation(array $item, OA\Operation $operation): array
+    {
+        if ($operation->method !== null && $this->supportsMethod($operation->method)) {
+            $item[$operation->method] = $this->compileOperation($operation);
+        }
+
+        return $item;
+    }
+
+    protected function supportsMethod(string $method): bool
+    {
+        return in_array($method, static::OPERATION_METHODS, true);
+    }
+
+    protected function acceptsRequestBody(string $method): bool
+    {
+        return in_array($method, static::OPERATION_REQUEST_BODY_METHODS, true);
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function compileOperation(OA\Operation $operation): array
+    {
+        $result = $this->filter([
+            'tags' => $operation->tags,
+            'summary' => $operation->summary,
+            'description' => $operation->description,
+            'externalDocs' => $operation->externalDocs instanceof OA\ExternalDocumentation
+                ? $this->compileExternalDocs($operation->externalDocs)
+                : null,
+            'operationId' => $operation->operationId,
+            'parameters' => $this->compileParameters($operation->parameters ?? []),
+            'requestBody' => $operation->requestBody instanceof OA\RequestBody
+                ? $this->compileRequestBody($operation->requestBody, $operation->method)
+                : null,
+            'responses' => $this->compileResponses($operation->responses ?? []),
+            'callbacks' => $this->compileCallbacks($operation->callbacks ?? []),
+            'deprecated' => $operation->deprecated,
+            'security' => $this->compileSecurity($operation->security ?? []),
+            'servers' => array_map($this->compileServer(...), $operation->servers ?? []),
+        ], $operation);
+
+        // `security: []` opts the operation out of the root requirements, so unlike an unset
+        // `null` it is a value -- and one filter() cannot tell from unset
+        if ([] === $operation->security) {
+            $result['security'] = [];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Recursively compile callback structures, resolving any DTO objects found within.
+     *
+     * @param  array<string,mixed> $callbacks
+     * @return array<string,mixed>
+     */
+    protected function compileCallbacks(array $callbacks): array
+    {
+        return array_map($this->compileCallbackValue(...), $callbacks);
+    }
+
+    protected function compileCallbackValue(mixed $value): mixed
+    {
+        if ($value instanceof OA\Operation) {
+            return $this->compileOperation($value);
+        }
+        if ($value instanceof OA\RequestBody) {
+            return $this->compileRequestBody($value);
+        }
+        if ($value instanceof OA\Response) {
+            return $this->compileResponse($value);
+        }
+        if ($value instanceof OA\Schema) {
+            return $this->compileSchema($value);
+        }
+        if (is_array($value)) {
+            return array_map($this->compileCallbackValue(...), $value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param  list<OA\Parameter>        $parameters
+     * @return list<array<string,mixed>>
+     */
+    protected function compileParameters(array $parameters): array
+    {
+        return array_values(array_map($this->compileParameter(...), array_filter($parameters, $this->carriesLocation(...))));
+    }
+
+    /**
+     * `in` is required, so a parameter in a location the version cannot carry is left out whole. A
+     * reference has the location of the component it points to, from `Augmenter\Parameters`.
+     */
+    protected function carriesLocation(OA\Parameter $parameter): bool
+    {
+        return $parameter->in === null || $this->omitUnsupported(['in' => $parameter->in], $parameter) !== [];
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function compileParameter(OA\Parameter $parameter): array
+    {
+        if ($parameter->ref !== null) {
+            return $this->compileReference($parameter);
+        }
+
+        $result = $this->filter([
+            'name' => $parameter->name,
+            'in' => $parameter->in,
+            'description' => $parameter->description,
+            'required' => $parameter->required,
+            'deprecated' => $parameter->deprecated,
+            'allowEmptyValue' => $parameter->allowEmptyValue,
+            'style' => $parameter->style,
+            'explode' => $parameter->explode,
+            'allowReserved' => $parameter->allowReserved,
+            'schema' => $parameter->schema instanceof OA\Schema ? $this->compileSchema($parameter->schema) : null,
+            'examples' => $this->compileKeyedMap($parameter->examples ?? [], 'example', $this->compileExample(...)),
+            'content' => $this->compileMediaTypes($parameter->content ?? []),
+        ], $parameter);
+
+        return $this->withDefined($result, ['example' => $parameter->example]);
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function compileRequestBody(OA\RequestBody $body, ?string $method = null): array|\stdClass|null
+    {
+        if ($method && !$this->acceptsRequestBody($method)) {
+            return null;
+        }
+
+        if ($body->ref !== null) {
+            return $this->compileReference($body);
+        }
+
+        $result = $this->filter([
+            'description' => $body->description,
+            'content' => $this->compileMediaTypes($body->content ?? []),
+            'required' => $body->required,
+        ], $body);
+
+        return $result ?: new \stdClass();
+    }
+
+    /**
+     * @param  list<OA\Response>   $responses
+     * @return array<string,mixed>
+     */
+    protected function compileResponses(array $responses): array
+    {
+        return $this->compileNamedMap($responses, fn (OA\Response $response): string => (string) $response->response, $this->compileResponse(...));
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function compileResponse(OA\Response $response): array
+    {
+        if ($response->ref !== null) {
+            return $this->compileReference($response);
+        }
+
+        return $this->filter([
+            'description' => $response->description,
+            'headers' => $this->compileKeyedMap($response->headers ?? [], 'header', $this->compileHeader(...)),
+            'content' => $this->compileMediaTypes($response->content ?? []),
+            'links' => $this->compileKeyedMap($response->links ?? [], 'link', $this->compileLink(...)),
+        ], $response);
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function compileHeader(OA\Header $header): array
+    {
+        if ($header->ref !== null) {
+            return $this->compileReference($header);
+        }
+
+        $result = $this->filter([
+            'description' => $header->description,
+            'required' => $header->required,
+            'deprecated' => $header->deprecated,
+            'style' => $header->style,
+            'explode' => $header->explode,
+            'schema' => $header->schema instanceof OA\Schema ? $this->compileSchema($header->schema) : null,
+            'examples' => $this->compileKeyedMap($header->examples ?? [], 'example', $this->compileExample(...)),
+            'content' => $this->compileMediaTypes($header->content ?? []),
+        ], $header);
+
+        return $this->withDefined($result, ['example' => $header->example]);
+    }
+
+    /**
+     * @param  list<OA\MediaType>  $mediaTypes
+     * @return array<string,mixed>
+     */
+    protected function compileMediaTypes(array $mediaTypes): array
+    {
+        // one without a type is left out, and reported by validateMediaTypes()
+        $typed = array_filter($mediaTypes, static fn (OA\MediaType $mediaType): bool => $mediaType->mediaType !== null);
+
+        return $this->compileNamedMap($typed, 'mediaType', $this->compileMediaType(...));
+    }
+
+    /**
+     * A media type with nothing set is still an object: `application/json: {}`.
+     *
+     * @return array<string,mixed>|\stdClass
+     */
+    protected function compileMediaType(OA\MediaType $mediaType): array|\stdClass
+    {
+        $result = $this->filter([
+            'schema' => $mediaType->schema instanceof OA\Schema ? $this->compileSchema($mediaType->schema) : null,
+            'examples' => $this->compileKeyedMap($mediaType->examples ?? [], 'example', $this->compileExample(...)),
+            'encoding' => $this->compileKeyedMap($mediaType->encoding ?? [], 'encoding', $this->compileEncoding(...)),
+            'itemSchema' => $mediaType->itemSchema instanceof OA\Schema ? $this->compileSchema($mediaType->itemSchema) : null,
+            'prefixEncoding' => $this->compilePositionalEncodings($mediaType->prefixEncoding ?? []),
+            'itemEncoding' => $mediaType->itemEncoding instanceof OA\Encoding ? $this->compilePositionalEncoding($mediaType->itemEncoding) : null,
+        ], $mediaType);
+
+        return $this->withDefined($result, ['example' => $mediaType->example]) ?: new \stdClass();
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function compileEncoding(OA\Encoding $encoding): array
+    {
+        return $this->filter([
+            'contentType' => $encoding->contentType,
+            'headers' => $this->compileKeyedMap($encoding->headers ?? [], 'header', $this->compileHeader(...)),
+            'style' => $encoding->style,
+            'explode' => $encoding->explode,
+            'allowReserved' => $encoding->allowReserved,
+            // the list names the property, `encodings`, not the key
+            'encoding' => $this->omitUnsupported(['encodings' => $this->compileKeyedMap($encoding->encodings ?? [], 'encoding', $this->compileEncoding(...))], $encoding)['encodings'] ?? null,
+            'prefixEncoding' => $this->compilePositionalEncodings($encoding->prefixEncoding ?? []),
+            'itemEncoding' => $encoding->itemEncoding instanceof OA\Encoding ? $this->compilePositionalEncoding($encoding->itemEncoding) : null,
+        ], $encoding);
+    }
+
+    /**
+     * @param  list<OA\Encoding>                   $encodings
+     * @return list<array<string,mixed>|\stdClass>
+     */
+    protected function compilePositionalEncodings(array $encodings): array
+    {
+        return array_values(array_map($this->compilePositionalEncoding(...), $encodings));
+    }
+
+    /**
+     * An encoding addressed by position has no name to key it, so one with nothing set is still
+     * an object: `itemEncoding: {}`.
+     *
+     * @return array<string,mixed>|\stdClass
+     */
+    protected function compilePositionalEncoding(OA\Encoding $encoding): array|\stdClass
+    {
+        return $this->compileEncoding($encoding) ?: new \stdClass();
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function compileLink(OA\Link $link): array
+    {
+        if ($link->ref !== null) {
+            return $this->compileReference($link);
+        }
+
+        $result = $this->filter([
+            'operationRef' => $link->operationRef,
+            'operationId' => $link->operationId,
+            'parameters' => $link->parameters,
+            'description' => $link->description,
+            'server' => $link->server instanceof OA\Server ? $this->compileServer($link->server) : null,
+        ], $link);
+
+        return $this->withDefined($result, ['requestBody' => $link->requestBody]);
+    }
+
+    /**
+     * A Reference Object: the `$ref`, with the `summary` and `description` declared beside it.
+     *
+     * @return array<string,mixed>
+     */
+    protected function compileReference(OA\Parameter|OA\RequestBody|OA\Response|OA\Header|OA\Link|OA\Example|OA\Security\Scheme $attribute): array
+    {
+        // no attribute, so no extensions: a Reference Object takes none
+        return $this->filter([
+            '$ref' => $attribute->ref,
+            'summary' => $attribute->summary,
+            'description' => $attribute->description,
+        ]);
+    }
+
+    /**
+     * @return array<string,mixed>|\stdClass
+     */
+    protected function compileSchema(OA\Schema|string $schema): array|\stdClass
+    {
+        if (is_string($schema)) {
+            return ['$ref' => $schema];
+        }
+
+        if ($schema->ref !== null) {
+            if ($schema->nullable === true) {
+                return $this->filter([
+                    'oneOf' => [
+                        $this->filter([
+                            '$ref' => $schema->ref,
+                            'description' => Undefined::isDefault($schema->description) ? null : $schema->description,
+                        ]),
+                        ['type' => 'null'],
+                    ],
+                ], $schema) + $this->compileRefAnnotations($schema);
+            }
+
+            return $this->filter(['$ref' => $schema->ref], $schema) + $this->compileRefAnnotations($schema);
+        }
+
+        $type = $schema->type;
+        if ($schema->nullable === true && $type !== null) {
+            $type = (array) $type;
+            if (!in_array('null', $type, true)) {
+                $type[] = 'null';
+            }
+        }
+        if (is_array($type) && count($type) === 1) {
+            $type = reset($type);
+        }
+
+        $result = $this->filter([
+            'type' => $type,
+            'format' => $schema->format,
+            'title' => $schema->title,
+            'description' => $schema->description,
+            'enum' => $schema->enum,
+
+            // String
+            'minLength' => $schema->minLength,
+            'maxLength' => $schema->maxLength,
+            'pattern' => $schema->pattern,
+            'contentMediaType' => $schema->contentMediaType,
+            'contentEncoding' => $schema->contentEncoding,
+            'contentSchema' => $schema->contentSchema instanceof OA\Schema ? $this->compileSchema($schema->contentSchema) : null,
+
+            // Numeric
+            'minimum' => $this->compileMinimum($schema),
+            'maximum' => $this->compileMaximum($schema),
+            'exclusiveMinimum' => $this->compileExclusiveMinimum($schema),
+            'exclusiveMaximum' => $this->compileExclusiveMaximum($schema),
+            'multipleOf' => $schema->multipleOf,
+
+            // Array
+            'items' => $schema->items !== null ? $this->compileSchema($schema->items) : null,
+            'minItems' => $schema->minItems,
+            'maxItems' => $schema->maxItems,
+            'uniqueItems' => $schema->uniqueItems,
+            'prefixItems' => $schema->prefixItems !== null ? array_map($this->compileSchema(...), $schema->prefixItems) : null,
+            'contains' => $schema->contains !== null ? (is_bool($schema->contains) ? $schema->contains : $this->compileSchema($schema->contains)) : null,
+            'minContains' => $schema->minContains,
+            'maxContains' => $schema->maxContains,
+            'unevaluatedItems' => $schema->unevaluatedItems !== null ? (is_bool($schema->unevaluatedItems) ? $schema->unevaluatedItems : $this->compileSchema($schema->unevaluatedItems)) : null,
+
+            // Object
+            'properties' => $schema->properties !== null ? $this->compileProperties($schema->properties) : null,
+            'required' => $schema->required,
+            'additionalProperties' => $schema->additionalProperties !== null ? (is_bool($schema->additionalProperties) ? $schema->additionalProperties : $this->compileSchema($schema->additionalProperties)) : null,
+            'patternProperties' => $schema->patternProperties !== null ? array_map($this->compileSchema(...), $schema->patternProperties) : null,
+            'minProperties' => $schema->minProperties,
+            'maxProperties' => $schema->maxProperties,
+            'unevaluatedProperties' => $schema->unevaluatedProperties !== null ? (is_bool($schema->unevaluatedProperties) ? $schema->unevaluatedProperties : $this->compileSchema($schema->unevaluatedProperties)) : null,
+            'propertyNames' => $schema->propertyNames instanceof OA\Schema ? $this->compileSchema($schema->propertyNames) : null,
+            'dependentRequired' => $schema->dependentRequired,
+            'dependentSchemas' => $schema->dependentSchemas !== null ? array_map($this->compileSchema(...), $schema->dependentSchemas) : null,
+
+            // Composition
+            'allOf' => $schema->allOf !== null ? array_map($this->compileSchema(...), $schema->allOf) : null,
+            'anyOf' => $schema->anyOf !== null ? array_map($this->compileSchema(...), $schema->anyOf) : null,
+            'oneOf' => $schema->oneOf !== null ? array_map($this->compileSchema(...), $schema->oneOf) : null,
+            'not' => $schema->not instanceof OA\Schema ? $this->compileSchema($schema->not) : null,
+
+            // Conditional
+            'if' => $schema->if instanceof OA\Schema ? $this->compileSchema($schema->if) : null,
+            'then' => $schema->then instanceof OA\Schema ? $this->compileSchema($schema->then) : null,
+            'else' => $schema->else instanceof OA\Schema ? $this->compileSchema($schema->else) : null,
+
+            // Examples — the JSON Schema keyword, a list of values rather than a map
+            'examples' => $schema->examples,
+
+            // Meta
+            'deprecated' => $schema->deprecated,
+            'readOnly' => $schema->readOnly,
+            'writeOnly' => $schema->writeOnly,
+
+            // OpenAPI extensions on schema
+            'discriminator' => $schema->discriminator instanceof OA\Discriminator ? $this->compileDiscriminator($schema->discriminator) : null,
+            'externalDocs' => $schema->externalDocs instanceof OA\ExternalDocumentation ? $this->compileExternalDocs($schema->externalDocs) : null,
+            'xml' => $schema->xml instanceof OA\Xml ? $this->compileXml($schema->xml, $schema) : null,
+        ], $schema);
+
+        // without a type to add `null` to, null gets a branch of its own where there is a choice
+        if ($schema->nullable === true && $type === null) {
+            foreach (['oneOf', 'anyOf'] as $keyword) {
+                if (isset($result[$keyword])) {
+                    if (!in_array(['type' => 'null'], $result[$keyword], true)) {
+                        $result[$keyword][] = ['type' => 'null'];
+                    }
+                    break;
+                }
+            }
+        }
+
+        $result = $this->withDefined($result, [
+            'default' => $schema->default,
+            'const' => $schema->const,
+            'example' => $schema->example,
+        ]);
+
+        return $result ?: new \stdClass();
+    }
+
+    /**
+     * The annotation keywords a `$ref` schema keeps: beside `$ref`, or on the wrapper of a nullable one.
+     *
+     * In 3.1 a Schema's `$ref` is an ordinary JSON Schema keyword, so its siblings are evaluated;
+     * the Reference Object's limit to `summary` and `description` does not apply to it.
+     *
+     * @return array<string,mixed>
+     */
+    protected function compileRefAnnotations(OA\Schema $schema): array
+    {
+        $result = $this->filter([
+            'title' => $schema->title,
+            'description' => $schema->description,
+            'examples' => $schema->examples,
+            'deprecated' => $schema->deprecated,
+            'readOnly' => $schema->readOnly,
+            'writeOnly' => $schema->writeOnly,
+        ]);
+
+        return $this->withDefined($result, [
+            'default' => $schema->default,
+            'example' => $schema->example,
+        ]);
+    }
+
+    /**
+     * @param  list<OA\Property>   $properties
+     * @return array<string,mixed>
+     */
+    protected function compileProperties(array $properties): array
+    {
+        $result = [];
+
+        foreach ($properties as $property) {
+            if ($property->property === null) {
+                continue;
+            }
+
+            $schema = $property->schema instanceof OA\Schema ? $this->compileSchema($property->schema) : [];
+
+            // a property has no object of its own in the document, so its extensions go on its schema
+            foreach ($property->x ?? [] as $key => $value) {
+                $schema = (array) $schema;
+                $schema['x-' . $key] = $value;
+            }
+
+            $result[$property->property] = $schema ?: new \stdClass();
+        }
+
+        return $result;
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function compileDiscriminator(OA\Discriminator $discriminator): array
+    {
+        return $this->filter([
+            'propertyName' => $discriminator->propertyName,
+            'mapping' => $discriminator->mapping,
+            'defaultMapping' => $discriminator->defaultMapping,
+        ], $discriminator);
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function compileXml(OA\Xml $xml, ?OA\Schema $schema = null): array
+    {
+        $fields = $this->nodeTypeFields($xml, $schema) ?? [];
+
+        return $this->filter([
+            'name' => $xml->name,
+            'namespace' => $xml->namespace,
+            'prefix' => $xml->prefix,
+            'attribute' => $xml->attribute ?? $fields['attribute'] ?? null,
+            'wrapped' => $xml->wrapped ?? $fields['wrapped'] ?? null,
+        ], $xml);
+    }
+
+    /**
+     * `nodeType` is new in 3.2. Before, `attribute` and `wrapped` say what it says where they can:
+     * an attribute, or an array wrapped in an element. The node type a schema has by default needs
+     * no field, and a text, CDATA or absent node has no older form. A field set by hand is kept.
+     *
+     * @return array<string,bool>|null the fields to write, or null where the node type cannot be written
+     */
+    protected function nodeTypeFields(OA\Xml $xml, ?OA\Schema $schema): ?array
+    {
+        $isArray = $schema instanceof OA\Schema && $this->isArrayType($schema);
+        $default = $isArray || $schema?->getRefValue() !== null ? OA\XmlNodeType::None->value : OA\XmlNodeType::Element->value;
+
+        return match ($xml->nodeType) {
+            null, $default => [],
+            OA\XmlNodeType::Attribute->value => ['attribute' => true],
+            OA\XmlNodeType::Element->value => $isArray ? ['wrapped' => true] : null,
+            default => null,
+        };
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function compileComponents(Specification $specification): array
+    {
+        return array_filter($this->omitUnsupported([
+            'schemas' => $this->compileComponentMap($specification->schemas, $this->compileSchema(...)),
+            'responses' => $this->compileComponentMap($specification->responses, $this->compileResponse(...)),
+            'parameters' => $this->compileComponentMap(array_values(array_filter($specification->parameters, $this->carriesLocation(...))), $this->compileParameter(...)),
+            'requestBodies' => $this->compileComponentMap($specification->requestBodies, $this->compileRequestBody(...)),
+            'headers' => $this->compileComponentMap($specification->headers, $this->compileHeader(...)),
+            'securitySchemes' => $this->compileSecuritySchemes($specification->securitySchemes),
+            'links' => $this->compileComponentMap($specification->links, $this->compileLink(...)),
+            'examples' => $this->compileComponentMap($specification->examples, $this->compileExample(...)),
+            'pathItems' => $this->compileComponentMap($specification->pathItems, $this->compilePathItem(...)),
+            'mediaTypes' => $this->compileComponentMap($specification->mediaTypes, $this->compileMediaType(...)),
+            ...array_combine(array_map(fn (string $key): string => 'x-' . $key, array_keys($specification->componentsX)), $specification->componentsX),
+        ], $specification));
+    }
+
+    /**
+     * Warns about each set property in `$unsupported`, which the compile methods leave out.
+     * Copies of one declaration produce the same message, which is logged once.
+     *
+     * @param array<class-string<OA\AbstractAttribute|Specification>, array<int|string, string>> $unsupported class => property names, or property name => hint
+     */
+    protected function validateUnsupportedProperties(Specification $specification, array $unsupported): void
+    {
+        if ($unsupported === []) {
+            return;
+        }
+
+        $version = implode('.', array_slice(explode('.', $this->getVersion()), 0, 2));
+        $reported = [];
+
+        $check = function (OA\AbstractAttribute|Specification $attribute) use ($unsupported, $version, &$reported): void {
+            foreach ($unsupported as $class => $properties) {
+                if (!$attribute instanceof $class) {
+                    continue;
+                }
+
+                foreach ($properties as $property => $hint) {
+                    if (is_int($property)) {
+                        [$property, $hint] = [$hint, null];
+                    }
+
+                    if (in_array($attribute->{$property}, [null, Undefined::UNDEFINED, []], true)) {
+                        continue;
+                    }
+
+                    $message = "{$this->subject($attribute)} uses {$property}, not supported in OpenAPI {$version}, omitted"
+                        . ($hint !== null ? "; {$hint}" : '')
+                        . ($attribute instanceof OA\AbstractAttribute && $attribute->getReflector() instanceof \Reflector ? ' in ' . $attribute->getSourceLocation() : '');
+                    if (!isset($reported[$message])) {
+                        $reported[$message] = true;
+                        $this->logger->warning($message);
+                    }
+                }
+            }
+        };
+
+        // the walk visits attributes only, so the specification itself is checked here
+        $check($specification);
+
+        $classes = [];
+        foreach (array_keys($unsupported) as $class) {
+            if (is_a($class, OA\AbstractAttribute::class, true)) {
+                $classes[] = $class;
+            }
+        }
+
+        if ($classes !== []) {
+            $this->visit($specification, $classes, $check);
+        }
+    }
+
+    /**
+     * Warns about each set value in `$unsupported`, which the compile methods leave out.
+     *
+     * @param array<class-string<OA\AbstractAttribute>, array<string, list<string>>> $unsupported class => property => values
+     */
+    protected function validateUnsupportedValues(Specification $specification, array $unsupported): void
+    {
+        if ($unsupported === []) {
+            return;
+        }
+
+        $version = implode('.', array_slice(explode('.', $this->getVersion()), 0, 2));
+
+        $this->visit($specification, array_keys($unsupported), function (OA\AbstractAttribute $attribute) use ($unsupported, $version): void {
+            foreach ($unsupported as $class => $properties) {
+                if (!$attribute instanceof $class) {
+                    continue;
+                }
+
+                foreach ($properties as $property => $values) {
+                    if (in_array($attribute->{$property}, $values, true)) {
+                        $this->logger->warning("{$this->subject($attribute)} uses {$property} \"{$attribute->{$property}}\", not supported in OpenAPI {$version}, omitted"
+                            . ($attribute->getReflector() instanceof \Reflector ? ' in ' . $attribute->getSourceLocation() : ''));
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * A Security Requirement Object has no extensions in any version, so `x` on a requirement is
+     * never written.
+     */
+    protected function validateRequirementExtensions(Specification $specification): void
+    {
+        $this->visit($specification, OA\Security\Requirement::class, function (OA\Security\Requirement $requirement): void {
+            if ($requirement->x !== null) {
+                $this->logger->warning('Security requirement uses x, not supported in OpenAPI, omitted; the argument is removed in 8.0'
+                    . ($requirement->getReflector() instanceof \Reflector ? ' in ' . $requirement->getSourceLocation() : ''));
+            }
+        });
+    }
+
+    /**
+     * An attribute named the way a message starts: its kind, and its name where it has one.
+     */
+    protected function subject(OA\AbstractAttribute|Specification $attribute): string
+    {
+        return match (true) {
+            $attribute instanceof Specification => 'Components',
+            $attribute instanceof OA\Schema => 'Schema' . $this->schemaLabel($attribute),
+            $attribute instanceof OA\Tag && $attribute->name !== null => 'Tag "' . $attribute->name . '"',
+            $attribute instanceof OA\MediaType && $attribute->mediaType !== null => 'Media type "' . $attribute->mediaType . '"',
+            $attribute instanceof OA\Encoding && $attribute->encoding !== null => 'Encoding "' . $attribute->encoding . '"',
+            default => (new \ReflectionClass($attribute))->getShortName(),
+        };
+    }
+
+    /**
+     * A version that does not support every scheme type filters here; the keying stays shared.
+     *
+     * @param  list<OA\Security\Scheme> $schemes
+     * @return array<string,mixed>
+     */
+    protected function compileSecuritySchemes(array $schemes): array
+    {
+        return $this->compileComponentMap($schemes, $this->compileSecurityScheme(...));
+    }
+
+    /**
+     * Raw arrays are deprecated since 7.0 and removed in 8.0; use OA\Security\Requirement instances instead.
+     *
+     * A requirement naming no scheme makes authentication optional, and is still an object: `{}`.
+     *
+     * @param  list<OA\Security\Requirement|array<string,list<string>>> $security
+     * @return list<array<string,mixed>|\stdClass>
+     */
+    protected function compileSecurity(array $security): array
+    {
+        return array_map(static function (OA\Security\Requirement|array $item): array|\stdClass {
+            $requirement = $item instanceof OA\Security\Requirement ? $item->toArray() : SecurityRequirement::normalise($item);
+
+            return $requirement ?: new \stdClass();
+        }, $security);
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function compileSecurityScheme(OA\Security\Scheme $scheme): array
+    {
+        if ($scheme->ref !== null) {
+            return $this->compileReference($scheme);
+        }
+
+        return $this->filter([
+            'type' => $scheme->type,
+            'description' => $scheme->description,
+            'name' => $scheme->name,
+            'in' => $scheme->in,
+            'scheme' => $scheme->scheme,
+            'bearerFormat' => $scheme->bearerFormat,
+            'openIdConnectUrl' => $scheme->openIdConnectUrl,
+            'flows' => $this->compileFlows($scheme->flows ?? []),
+            'oauth2MetadataUrl' => $scheme->type === OA\SchemeType::OAuth2->value ? $scheme->oauth2MetadataUrl : null,
+            'deprecated' => $scheme->deprecated,
+        ], $scheme);
+    }
+
+    /**
+     * @param  list<OA\Flow>       $flows
+     * @return array<string,mixed>
+     */
+    protected function compileFlows(array $flows): array
+    {
+        $result = [];
+
+        foreach ($flows as $flow) {
+            // the type is the flow's key, so a type the version cannot carry leaves out the flow
+            $type = $this->omitUnsupported(['flow' => $flow->flow], $flow)['flow'] ?? null;
+            if ($type !== null) {
+                $result[$type] = $this->compileFlow($flow);
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function compileFlow(OA\Flow $flow): array
+    {
+        return $this->filter([
+            'authorizationUrl' => $flow->authorizationUrl,
+            'tokenUrl' => $flow->tokenUrl,
+            'refreshUrl' => $flow->refreshUrl,
+            'deviceAuthorizationUrl' => $flow->deviceAuthorizationUrl,
+            'scopes' => $flow->scopes ?: new \stdClass(),
+        ], $flow);
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    protected function compileExample(OA\Example $example): array
+    {
+        if ($example->ref !== null) {
+            return $this->compileReference($example);
+        }
+
+        $result = $this->filter([
+            'summary' => $example->summary,
+            'description' => $example->description,
+            'externalValue' => $example->externalValue,
+            'serializedValue' => $example->serializedValue,
+        ], $example);
+
+        // `dataValue` stands in for `value`, unless `value` or `externalValue` is set
+        $value = $example->value === Undefined::UNDEFINED && $example->externalValue === null ? $example->dataValue : $example->value;
+
+        return $this->withDefined($result, ['value' => $value]);
+    }
+
+    /**
+     * Every component takes its name from one field, and a property from `property`. None can
+     * be derived from a method or a non-constructor parameter, so an attribute declared there
+     * has to carry its own name — the same requirement classic enforces. `Augmenter\Names`
+     * fills the name in for anything declared on a class, so what reaches here is unnameable.
+     *
+     * A name claimed twice is `Augmenter\Merge`'s to reduce and report, and it runs first, so a
+     * repeat seen here means a `Specification` that was compiled without the pipeline.
+     */
+    protected function validateNames(Specification $specification): void
+    {
+        foreach (ComponentName::BUCKETS as $bucket) {
+            $seen = [];
+            foreach ($specification->{$bucket} as $component) {
+                $type = (new \ReflectionClass($component))->getShortName();
+                $name = ComponentName::of($component);
+
+                if ($name === null) {
+                    if ($component instanceof OA\PathItem) {
+                        continue; // path-bound, keyed by its path under `paths`
+                    }
+
+                    $this->logger->error(sprintf(
+                        '%s is missing the key field %s in %s',
+                        $type,
+                        ComponentName::keyField($component),
+                        $component->getSourceLocation(),
+                    ));
+                    continue;
+                }
+
+                if (isset($seen[$name])) {
+                    $this->logger->error(sprintf('%s "%s" is declared more than once, the last one kept in %s', $type, $name, $component->getSourceLocation()));
+                }
+                $seen[$name] = true;
+            }
+        }
+
+        $this->visit($specification, OA\Schema::class, function (OA\Schema $schema): void {
+            foreach ($schema->properties ?? [] as $property) {
+                if ($property->property === null) {
+                    $this->logger->error('Property is missing the key field property in ' . $property->getSourceLocation());
+                }
+            }
+        });
+    }
+
+    /**
+     * A member of one of these maps carries the key, so an entry without one cannot be placed.
+     * The compiler drops it; without this it would go silently, and classic rejects the same
+     * input outright.
+     */
+    protected function validateNestedNames(Specification $specification): void
+    {
+        $this->visit($specification, array_keys(static::NESTED_MAPS), function (AttributeInterface $attribute): void {
+            foreach (static::NESTED_MAPS as $container => $maps) {
+                if (!$attribute instanceof $container) {
+                    continue;
+                }
+
+                foreach ($maps as $property => $keyField) {
+                    foreach ($attribute->{$property} ?? [] as $item) {
+                        if (($item->{$keyField} ?? null) !== null) {
+                            continue;
+                        }
+
+                        $this->logger->error(sprintf(
+                            '%s is missing the key field %s, omitted in %s',
+                            (new \ReflectionClass($item))->getShortName(),
+                            $keyField,
+                            $item->getSourceLocation(),
+                        ));
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * `summary` belongs to the Reference Object, so these attributes write it only beside a
+     * `$ref`. A nested attribute has no source location of its own, so the operation, path
+     * item or component holding it is reported, and the key names the attribute. Copies of
+     * one declaration produce the same message, which is logged once.
+     */
+    protected function validateReferenceSummaries(Specification $specification): void
+    {
+        $reported = [];
+        $report = function (OA\AbstractAttribute $holder, array $attributes) use (&$reported): void {
+            foreach ($this->summariesWithoutRef($attributes) as $subject) {
+                $message = "{$subject} summary is written only beside \$ref, omitted in " . $holder->getSourceLocation();
+                if (!isset($reported[$message])) {
+                    $reported[$message] = true;
+                    $this->logger->error($message);
+                }
+            }
+        };
+
+        $this->visit($specification, OA\Operation::class, function (OA\Operation $operation) use ($report): void {
+            $report($operation, [...$operation->parameters ?? [], $operation->requestBody, ...$operation->responses ?? []]);
+        });
+        // a path item's responses are copied into its operations, which report them
+        $this->visit($specification, OA\PathItem::class, function (OA\PathItem $pathItem) use ($report): void {
+            $report($pathItem, $pathItem->parameters ?? []);
+        });
+
+        $components = [
+            ...$specification->parameters,
+            ...$specification->requestBodies,
+            ...$specification->responses,
+            ...$specification->headers,
+            ...$specification->links,
+            ...$specification->securitySchemes,
+        ];
+        foreach ($components as $component) {
+            $report($component, [$component]);
+        }
+    }
+
+    /**
+     * The attributes, and the headers and links of an inline response, that set `summary`
+     * without `$ref`, named by their key.
+     *
+     * @param  array<mixed> $attributes
+     * @return list<string>
+     */
+    protected function summariesWithoutRef(array $attributes): array
+    {
+        $subjects = [];
+        foreach ($attributes as $attribute) {
+            if (!$attribute instanceof OA\Parameter && !$attribute instanceof OA\RequestBody && !$attribute instanceof OA\Response
+                && !$attribute instanceof OA\Header && !$attribute instanceof OA\Link && !$attribute instanceof OA\Security\Scheme) {
+                continue;
+            }
+
+            if ($attribute->getRefValue() !== null) {
+                continue;
+            }
+
+            if ($attribute->summary !== null) {
+                [$kind, $key] = match (true) {
+                    $attribute instanceof OA\Parameter => ['Parameter', $attribute->name ?? $attribute->component],
+                    $attribute instanceof OA\RequestBody => ['Request body', $attribute->component],
+                    $attribute instanceof OA\Response => ['Response', $attribute->response ?? $attribute->component],
+                    $attribute instanceof OA\Header => ['Header', $attribute->header ?? $attribute->component],
+                    $attribute instanceof OA\Link => ['Link', $attribute->link ?? $attribute->component],
+                    default => ['Security scheme', $attribute->component],
+                };
+                $subjects[] = $key === null ? $kind : "{$kind} \"{$key}\"";
+            }
+
+            if ($attribute instanceof OA\Response) {
+                $subjects = [...$subjects, ...$this->summariesWithoutRef([...$attribute->headers ?? [], ...$attribute->links ?? []])];
+            }
+        }
+
+        return $subjects;
+    }
+
+    /**
+     * `Schema::$examples` is the JSON Schema keyword: a list of values, as its own docblock
+     * says. An Example Object belongs to the `examples` a media type, parameter or header
+     * takes, which is a map. Nothing else catches the mix-up — the property is `?array`, so
+     * `mixed` accepts an Example and the output merely looks odd.
+     */
+    protected function validateSchemaExamples(Specification $specification): void
+    {
+        $this->visit($specification, OA\Schema::class, function (OA\Schema $schema): void {
+            foreach ($schema->examples ?? [] as $example) {
+                if (!$example instanceof OA\Example) {
+                    continue;
+                }
+
+                $this->logger->warning(sprintf(
+                    'Schema%s has Example objects in examples, which takes values, in %s',
+                    $this->schemaLabel($schema),
+                    $example->getSourceLocation(),
+                ));
+            }
+        });
+    }
+
+    /**
+     * Whether the schema's type is `array`, alone or among others.
+     */
+    protected function isArrayType(OA\Schema $schema): bool
+    {
+        return in_array('array', (array) $schema->type, true);
+    }
+
+    protected function validateSchemas(Specification $specification): void
+    {
+        $allSchemas = $this->collectSchemas($specification);
+        $owners = $this->collectSchemaOwners($specification);
+
+        foreach ($allSchemas as $schema) {
+            if ($this->isArrayType($schema)) {
+                if ($schema->items === null && $schema->prefixItems === null && $schema->contains === null) {
+                    $this->logger->warning('Schema' . $this->schemaLabel($schema) . ' has type "array" but no items in ' . $schema->getSourceLocation());
+                }
+            }
+
+            $this->validateSchemaType($schema);
+            $this->validateRefSiblings($schema, $owners);
+        }
+    }
+
+    /**
+     * The property or parameter that holds each schema, for a schema without a location of its own.
+     *
+     * @return \SplObjectStorage<OA\Schema, OA\Property|OA\Parameter>
+     */
+    protected function collectSchemaOwners(Specification $specification): \SplObjectStorage
+    {
+        /** @var \SplObjectStorage<OA\Schema, OA\Property|OA\Parameter> $owners */
+        $owners = new \SplObjectStorage();
+        $specification->getWalker()->visit([OA\Property::class, OA\Parameter::class], function (OA\Property|OA\Parameter $owner) use ($owners): void {
+            if ($owner->schema instanceof OA\Schema) {
+                $owners->offsetSet($owner->schema, $owner);
+            }
+        });
+
+        return $owners;
+    }
+
+    /**
+     * Warns about the keywords a schema with a `$ref` sets that its compiled form leaves out.
+     *
+     * Only an authored keyword is reported: one an augmenter filled in, such as a docblock
+     * description on a property typed with a class, is no mistake of the author's.
+     *
+     * A schema type resolution made has no location of its own, so the warning names its owner's,
+     * or none.
+     *
+     * @param \SplObjectStorage<OA\Schema, OA\Property|OA\Parameter> $owners
+     */
+    protected function validateRefSiblings(OA\Schema $schema, \SplObjectStorage $owners): void
+    {
+        if ($schema->ref === null) {
+            return;
+        }
+
+        $compiled = $this->compileSchema($schema);
+        $dropped = [];
+        foreach (get_object_vars($schema) as $keyword => $value) {
+            if (in_array($keyword, static::NOT_REF_KEYWORDS, true)
+                || !$schema->isAuthored($keyword)
+                || in_array($value, [null, Undefined::UNDEFINED, []], true)
+                || ($value === false && in_array($keyword, static::FALSE_BY_DEFAULT_KEYWORDS, true))
+                || (is_array($compiled) && array_key_exists($keyword, $compiled))
+            ) {
+                continue;
+            }
+
+            $dropped[] = $keyword;
+        }
+
+        if ($dropped !== []) {
+            $located = $schema->getReflector() instanceof \Reflector || !$owners->offsetExists($schema)
+                ? $schema
+                : $owners->offsetGet($schema);
+
+            $this->logger->warning(sprintf(
+                'Schema%s sets %s beside $ref "%s", omitted%s',
+                $this->schemaLabel($schema),
+                implode(', ', $dropped),
+                $schema->getRefValue(),
+                $located->getReflector() instanceof \Reflector ? ' in ' . $located->getSourceLocation() : '',
+            ));
+        }
+    }
+
+    protected function validateSchemaType(OA\Schema $schema): void
+    {
+        if ($schema->type === null) {
+            return;
+        }
+
+        foreach (is_array($schema->type) ? $schema->type : [$schema->type] as $type) {
+            if (in_array($type, static::SCHEMA_TYPES, true)) {
+                continue;
+            }
+
+            $this->logger->error('Schema' . $this->schemaLabel($schema) . " has unknown type \"$type\", expecting one of " . implode(', ', static::SCHEMA_TYPES) . ' in ' . $schema->getSourceLocation());
+        }
+    }
+
+    protected function validateOperations(Specification $specification): void
+    {
+        $this->visit($specification, OA\Operation::class, function (OA\Operation $operation): void {
+            if ($operation->method === null) {
+                if ($operation->path !== null || $operation->webhook !== null) {
+                    $this->logger->error('Operation has no method, omitted in ' . $operation->getSourceLocation());
+                }
+
+                return;
+            }
+
+            if (!$this->supportsMethod($operation->method)) {
+                $this->logger->warning("Method \"{$operation->method}\" is not supported in OpenAPI " . substr($this->getVersion(), 0, 3) . ', omitted in ' . $operation->getSourceLocation());
+
+                return;
+            }
+
+            if ($operation->requestBody instanceof OA\RequestBody && !$this->acceptsRequestBody($operation->method)) {
+                $this->logger->warning("Request body is not supported for method \"{$operation->method}\" in " . $operation->getSourceLocation());
+            }
+        });
+    }
+
+    /**
+     * Generated ids cannot collide — `OperationIds` derives them from method, path and
+     * source — so this only ever fires for values set by hand.
+     *
+     * Uniqueness is a property of the document, so an operation carrying neither a path nor
+     * a webhook is skipped: it is emitted nowhere and its id is never written down.
+     */
+    protected function validateOperationIds(Specification $specification): void
+    {
+        $seen = [];
+        $this->visit($specification, OA\Operation::class, function (OA\Operation $operation) use (&$seen): void {
+            if ($operation->operationId === null || ($operation->path === null && $operation->webhook === null)) {
+                return;
+            }
+
+            if (isset($seen[$operation->operationId])) {
+                $this->logger->error("Operation \"{$operation->operationId}\" shares its operationId with another operation; operationId must be unique in " . $operation->getSourceLocation());
+
+                return;
+            }
+
+            $seen[$operation->operationId] = true;
+        });
+    }
+
+    /**
+     * `Augmenter\PathParameters` fills in what was left out, so this only fires for a
+     * `required` set by hand.
+     */
+    protected function validatePathParameters(Specification $specification): void
+    {
+        $this->visit($specification, OA\Parameter::class, function (OA\Parameter $parameter): void {
+            if ($parameter->in !== OA\ParameterIn::Path->value || $parameter->ref !== null || $parameter->required === true) {
+                return;
+            }
+
+            $this->logger->error("Path parameter \"{$parameter->name}\" must be required in " . $parameter->getSourceLocation());
+        });
+    }
+
+    /**
+     * Only responses nested in an operation are checked, because position is what gives
+     * `Response::$response` its meaning: a status code there, and a component name in the
+     * `responses` bucket, where `components.responses.product` is a name. `isRoot()` cannot
+     * tell them apart — it is true whenever the field is set.
+     *
+     * A nested response carries no reflector of its own, so the operation is reported
+     * instead, which is where the reader has to go to fix it anyway.
+     */
+    protected function validateResponses(Specification $specification): void
+    {
+        $this->visit($specification, OA\Operation::class, function (OA\Operation $operation): void {
+            foreach ($operation->responses ?? [] as $response) {
+                if ($response->response === null) {
+                    continue;
+                }
+
+                if (preg_match(static::RESPONSE_KEY, (string) $response->response) !== 1) {
+                    $this->logger->error("Response \"{$response->response}\" is not \"default\", an HTTP status code or a range such as \"2XX\" in " . $operation->getSourceLocation());
+                }
+            }
+        });
+    }
+
+    /**
+     * A media type in a `content` list needs its type, which is its key in the document, and
+     * that key once per list: of two with one type, the later one is kept.
+     */
+    protected function validateMediaTypes(Specification $specification): void
+    {
+        $check = function (OA\Response|OA\RequestBody|OA\Parameter|OA\Header $holder): void {
+            $seen = [];
+            foreach ($holder->content ?? [] as $mediaType) {
+                if ($mediaType->mediaType === null) {
+                    $this->logger->error(sprintf(
+                        '%s is missing the key field mediaType, omitted in %s',
+                        (new \ReflectionClass($mediaType))->getShortName(),
+                        $holder->getSourceLocation(),
+                    ));
+                    continue;
+                }
+
+                if (isset($seen[$mediaType->mediaType])) {
+                    $this->logger->error(sprintf(
+                        'Media type "%s" is declared more than once in one content, the last one kept in %s',
+                        $mediaType->mediaType,
+                        $holder->getSourceLocation(),
+                    ));
+                }
+                $seen[$mediaType->mediaType] = true;
+            }
+        };
+
+        $this->visit($specification, [OA\Response::class, OA\RequestBody::class, OA\Parameter::class, OA\Header::class], $check);
+    }
+
+    /**
+     * @return list<OA\Schema>
+     */
+    protected function collectSchemas(Specification $specification): array
+    {
+        $schemas = [];
+        $specification->getWalker()->visit(OA\Schema::class, function (OA\Schema $schema) use (&$schemas): void {
+            $schemas[] = $schema;
+        });
+
+        return $schemas;
+    }
+
+    /**
+     * Visits every attribute of `$classes`: in the shared walk inside `validate()`, at once outside it.
+     *
+     * Inside `validate()` the visitor runs after `validateSpecification()` returns, so a check
+     * that needs what it collects before going on walks with `getWalker()->visit()` instead.
+     *
+     * @template T of AttributeInterface
+     *
+     * @param class-string<T>|list<class-string<T>> $classes
+     * @param callable(T): void                     $visitor
+     */
+    protected function visit(Specification $specification, string|array $classes, callable $visitor): void
+    {
+        if ($this->walker instanceof Walker) {
+            $this->walker->deferredVisit($classes, $visitor);
+        } else {
+            $specification->getWalker()->visit($classes, $visitor);
+        }
+    }
+
+    /**
+     * Compiles one `components` bucket, keyed the way `ComponentIndex` resolves a `$ref`.
+     *
+     * A component with no name is dropped rather than filed under its position: it cannot be
+     * referenced, and an integer key turns the whole bucket into a JSON array where OpenAPI
+     * requires a map. A name claimed twice keeps the last. `validateNames()` reports both.
+     *
+     * @param  list<AttributeInterface> $components
+     * @return array<string,mixed>
+     */
+    protected function compileComponentMap(array $components, \Closure $compiler): array
+    {
+        $result = [];
+
+        foreach ($components as $component) {
+            $name = ComponentName::of($component);
+            if ($name === null) {
+                continue;
+            }
+
+            $result[$name] = $compiler($component);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Compiles a map keyed by a field of its own members — a response's `headers`, a media
+     * type's `encoding`.
+     *
+     * An entry with no key is dropped rather than given its position: an integer key turns
+     * the map into a JSON array, and OpenAPI requires `Map[string, Object]` everywhere one of
+     * these appears. `validateNestedNames()` reports it.
+     *
+     * @param  array<object>       $items only the values are read, so the caller's keys — a
+     *                                    list, or a name-keyed map — make no difference here
+     * @return array<string,mixed>
+     */
+    protected function compileKeyedMap(array $items, string $keyField, \Closure $compiler): array
+    {
+        $result = [];
+
+        foreach ($items as $item) {
+            $name = $item->{$keyField} ?? null;
+            if ($name === null) {
+                continue;
+            }
+
+            $result[$name] = $compiler($item);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Compiles a map whose key is a *value* rather than a name — a status code, a media type.
+     * Those have a meaningful fallback; a missing name does not, so it goes to
+     * {@see compileKeyedMap()} instead.
+     *
+     * @return array<string,mixed>
+     */
+    /**
+     * The schema's key, quoted, for a diagnostic — or nothing, for an inline one.
+     */
+    protected function schemaLabel(OA\Schema $schema): string
+    {
+        $name = ComponentName::of($schema);
+
+        return $name !== null ? " \"$name\"" : '';
+    }
+
+    /**
+     * Where the schema was declared, as a diagnostic's ending — or nothing, for one built in code.
+     *
+     * An inline schema has no name, so this is what tells the warnings of two such schemas apart.
+     */
+    protected function schemaLocation(OA\Schema $schema): string
+    {
+        return $schema->getReflector() instanceof \Reflector ? ' in ' . $schema->getSourceLocation() : '';
+    }
+
+    /**
+     * The reference a `$ref` holds, whether it is the string or a `Schema\Ref` around it.
+     *
+     * @deprecated since 7.1, removed in 8.0; use `RefInterface::getRefValue()`
+     */
+    protected function refString(string|OA\Schema\Ref|null $ref): ?string
+    {
+        return $ref instanceof OA\Schema\Ref ? $this->refString($ref->ref) : $ref;
+    }
+
+    /**
+     * @param array<array-key, object> $items
+     *
+     * @return array<string, mixed>
+     */
+    protected function compileNamedMap(array $items, string|\Closure $key, \Closure $compiler): array
+    {
+        $result = [];
+
+        foreach ($items as $index => $item) {
+            $name = $key instanceof \Closure ? $key($item, $index) : ($item->$key ?? (string) $index);
+            $result[$name] = $compiler($item);
+        }
+
+        return $result;
+    }
+
+    protected function compileMinimum(OA\Schema $schema): int|float|null
+    {
+        if ($schema->exclusiveMinimum === true) {
+            return null;
+        }
+
+        return $schema->minimum;
+    }
+
+    protected function compileMaximum(OA\Schema $schema): int|float|null
+    {
+        if ($schema->exclusiveMaximum === true) {
+            return null;
+        }
+
+        return $schema->maximum;
+    }
+
+    protected function compileExclusiveMinimum(OA\Schema $schema): int|float|null
+    {
+        if ($schema->exclusiveMinimum === true) {
+            return $schema->minimum;
+        }
+
+        if (is_numeric($schema->exclusiveMinimum)) {
+            return $schema->exclusiveMinimum;
+        }
+
+        return null;
+    }
+
+    protected function compileExclusiveMaximum(OA\Schema $schema): int|float|null
+    {
+        if ($schema->exclusiveMaximum === true) {
+            return $schema->maximum;
+        }
+
+        if (is_numeric($schema->exclusiveMaximum)) {
+            return $schema->exclusiveMaximum;
+        }
+
+        return null;
+    }
+
+    /**
+     * Leaves out the properties this version cannot carry, which `validateUnsupportedProperties()`
+     * warns about.
+     *
+     * @param  array<string,mixed> $result
+     * @return array<string,mixed>
+     */
+    protected function omitUnsupported(array $result, OA\AbstractAttribute|Specification|null $attribute): array
+    {
+        foreach (static::UNSUPPORTED_PROPERTIES as $class => $properties) {
+            if ($attribute instanceof $class) {
+                foreach ($properties as $property => $hint) {
+                    unset($result[is_int($property) ? $hint : $property]);
+                }
+            }
+        }
+
+        foreach (static::UNSUPPORTED_VALUES as $class => $properties) {
+            if ($attribute instanceof $class) {
+                foreach ($properties as $property => $values) {
+                    if (in_array($result[$property] ?? null, $values, true)) {
+                        unset($result[$property]);
+                    }
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Remove null entries and the properties this version cannot carry, and apply x- extensions.
+     *
+     * @param  array<string,mixed> $result
+     * @return array<string,mixed>
+     */
+    protected function filter(array $result, OA\AbstractAttribute|null $attribute = null): array
+    {
+        $result = array_filter($this->omitUnsupported($result, $attribute), fn ($value): bool => !in_array($value, [null, Undefined::UNDEFINED, []], true));
+
+        if ($attribute?->x !== null) {
+            foreach ($attribute->x as $key => $value) {
+                $result['x-' . $key] = $value;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Adds each of $values to $result unless it was left at its Undefined-sentinel default.
+     *
+     * For fields whose meaningful values overlap what {@see filter()} treats as "unset"
+     * (`null`, `[]`) — `example` is the case in point, since an explicitly declared `[]` is
+     * valid and distinct from not declaring it at all — bypass filter() and gate on the
+     * sentinel directly instead.
+     *
+     * @param  array<string,mixed> $result
+     * @param  array<string,mixed> $values
+     * @return array<string,mixed>
+     */
+    protected function withDefined(array $result, array $values): array
+    {
+        foreach ($values as $key => $value) {
+            if (!Undefined::isDefault($value)) {
+                $result[$key] = $value;
+            }
+        }
+
+        return $result;
+    }
+}
