@@ -29,7 +29,7 @@ Rules: first_name and last_name 1-50 chars; email valid, max 100, unique; passwo
 | POST | /categories | admin | 201 | 400, 401, 403 |
 | PUT | /categories/{id} | admin | 200 | 400, 401, 403, 404 |
 | DELETE | /categories/{id} | admin | 200 | 400, 401, 403, 404 |
-Rules: name 2-50 chars and unique; description optional, max 255. DELETE is 400 if the category has recipes.
+Rules: name 2-50 chars and unique; description optional, max 255. DELETE is 400 if the category has recipes.GET /categories returns all categories (no paging).
 
 ## Recipes
 | Method | Path | Access | Success | Errors |
