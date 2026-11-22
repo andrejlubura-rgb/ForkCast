@@ -105,6 +105,80 @@ class RecipeService
         return $this->getById($actor, $id);
     }
 
+    // Imports a TheMealDB meal for the caller; returns [recipe, created] and reuses the recipe when it was imported before.
+    public function importFromMealDb(array $actor, string $externalId): array
+    {
+        $externalId = trim($externalId);
+
+        // external_id is a varchar(20) in the database, so longer values could never be stored.
+        if ($externalId === '' || mb_strlen($externalId, 'UTF-8') > 20) {
+            throw ApiException::badRequest('Invalid TheMealDB meal id.');
+        }
+
+        $userId = (int) $actor['id'];
+
+        // Importing the same meal twice returns the recipe that already exists.
+        $existing = $this->dao->getByExternalId($userId, $externalId);
+
+        if ($existing !== null) {
+            return [$this->getById($actor, (int) $existing['id']), false];
+        }
+
+        // The lookup happens before the transaction, so a slow external API never holds a database lock.
+        $meal = (new MealDbService())->lookup($externalId);
+
+        $title = $meal['name'] ?? '';
+        $instructions = $meal['instructions'] ?? '';
+        $categoryName = $meal['category'] ?? '';
+
+        if ($title === '' || $instructions === '' || $categoryName === '') {
+            throw ApiException::badRequest('This meal cannot be imported because some of its data is missing.');
+        }
+
+        $recipe = [
+            'user_id' => $userId,
+            'title' => $title,
+            'instructions' => $instructions,
+            // TheMealDB has no preparation time and no serving count.
+            'prep_time_minutes' => 30,
+            'servings' => 4,
+            'image_url' => $meal['thumbnail'] ?? null,
+            'source' => 'mealdb',
+            'external_id' => $externalId,
+        ];
+
+        $ingredients = [];
+
+        foreach ($meal['ingredients'] ?? [] as $line) {
+            $ingredient = ['name' => $line['name']];
+
+            if (isset($line['measure']) && $line['measure'] !== '') {
+                $ingredient['measure'] = $line['measure'];
+            }
+
+            $ingredients[] = $ingredient;
+        }
+
+        $this->dao->beginTransaction();
+
+        try {
+            // getByName compares case-insensitively because categories.name uses a case-insensitive collation.
+            $category = $this->categoryDao->getByName($categoryName);
+            $recipe['category_id'] = $category !== null
+                ? (int) $category['id']
+                : $this->categoryDao->insert(['name' => $categoryName]);
+
+            $id = $this->dao->insert($recipe);
+            $this->insertIngredients($id, $ingredients);
+            $this->dao->commit();
+        } catch (Throwable $exception) {
+            $this->rollBackQuietly();
+            throw $exception;
+        }
+
+        return [$this->getById($actor, $id), true];
+    }
+
     // Updates a recipe for its owner or an admin; ingredients replace all existing ones when they are sent.
     public function update(array $actor, int $id, array $data): array
     {
