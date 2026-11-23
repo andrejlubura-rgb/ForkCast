@@ -1,0 +1,2545 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "ForkCast API",
+        "description": "REST API for ForkCast, a meal planner where users save recipes (their own or imported from TheMealDB), plan their week and get an automatic shopping list. Requests and responses are JSON. Until JWT authentication arrives in Milestone 4 the caller is identified by the temporary X-User-Id header.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost/forkcast/ForkCast/backend",
+            "description": "This server"
+        }
+    ],
+    "paths": {
+        "/categories": {
+            "get": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "List all categories",
+                "description": "Returns every category without paging. Any identified user.",
+                "operationId": "69a3169caf89cf934435b4eba8a5e915",
+                "responses": {
+                    "200": {
+                        "description": "All categories.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Category"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Create a category",
+                "description": "Creates a category. Admins only. The name must be unique.",
+                "operationId": "f131c5ed9b4258f7fd799f97053555f0",
+                "requestBody": {
+                    "description": "The new category.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CategoryInput"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "The created category.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Category"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            }
+        },
+        "/categories/{id}": {
+            "get": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Get a category",
+                "description": "Returns one category. Any identified user.",
+                "operationId": "4c2f9cf19a9ff2a611884d46770ebc5f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Category id.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The category.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Category"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Update a category",
+                "description": "Updates a category. Admins only. The name must stay unique.",
+                "operationId": "b097fd81c1044ee66e0d543c41c13960",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Category id.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "The new category data.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CategoryInput"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "The updated category.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Category"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Delete a category",
+                "description": "Deletes a category. Admins only. Returns 400 when the category still has recipes.",
+                "operationId": "de72178009103be74a1499bc9934c9cc",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Category id.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Deleted"
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            }
+        },
+        "/external/meals/search": {
+            "get": {
+                "tags": [
+                    "External"
+                ],
+                "summary": "Search TheMealDB meals",
+                "description": "Sends exactly one filter to TheMealDB. A name search returns full meals; category, area and ingredient filters return summaries. The result list can be empty.",
+                "operationId": "3d70b815405262a827259ffa2c633087",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Search by meal name. Exactly one of q, category, area or ingredient must be sent.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "description": "Filter by category. Exactly one of q, category, area or ingredient must be sent.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "area",
+                        "in": "query",
+                        "description": "Filter by area. Exactly one of q, category, area or ingredient must be sent.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "ingredient",
+                        "in": "query",
+                        "description": "Filter by ingredient. Exactly one of q, category, area or ingredient must be sent.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Matching meals: full meals for q, summaries for the other filters.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ExternalMeal"
+                                            }
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ExternalMealSummary"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "503": {
+                        "description": "TheMealDB is unavailable. Returns the friendly message from docs/API.md.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            }
+        },
+        "/external/meals/random": {
+            "get": {
+                "tags": [
+                    "External"
+                ],
+                "summary": "Get a random TheMealDB meal",
+                "description": "Returns one simplified meal from TheMealDB.",
+                "operationId": "254e5de89ccf7d308d31cc3d15a7dc25",
+                "responses": {
+                    "200": {
+                        "description": "A random simplified meal.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalMeal"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "503": {
+                        "description": "TheMealDB is unavailable. Returns the friendly message from docs/API.md.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            }
+        },
+        "/external/meals/{id}": {
+            "get": {
+                "tags": [
+                    "External"
+                ],
+                "summary": "Get a TheMealDB meal by id",
+                "description": "Returns one simplified meal from TheMealDB.",
+                "operationId": "85f17a34ebeb76f397b3b36c40812c70",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "TheMealDB meal id.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The simplified meal.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalMeal"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "503": {
+                        "description": "TheMealDB is unavailable. Returns the friendly message from docs/API.md.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            }
+        },
+        "/recipes/{id}/ingredients": {
+            "get": {
+                "tags": [
+                    "Ingredients"
+                ],
+                "summary": "List recipe ingredients",
+                "description": "Returns every ingredient line of a recipe. Any identified user.",
+                "operationId": "2f00ef5ced345d6814e47280d970f42d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Recipe id.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The ingredient lines of the recipe.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Ingredient"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Ingredients"
+                ],
+                "summary": "Add a recipe ingredient",
+                "description": "Adds an ingredient line to a recipe. The owner of the recipe or an admin only.",
+                "operationId": "26349107826a40061da408752896f805",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Recipe id.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "The new ingredient line.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/IngredientInput"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "The created ingredient line.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Ingredient"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            }
+        },
+        "/ingredients/{id}": {
+            "put": {
+                "tags": [
+                    "Ingredients"
+                ],
+                "summary": "Update a recipe ingredient",
+                "description": "Updates one ingredient line. The owner of its recipe or an admin only.",
+                "operationId": "f909b5b35269c63d7c9b0d6f67963e0a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Ingredient id.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "The fields to update.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/IngredientInput"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "The updated ingredient line.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Ingredient"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Ingredients"
+                ],
+                "summary": "Delete a recipe ingredient",
+                "description": "Deletes an ingredient line. The owner of its recipe or an admin only. Returns 400 for the last ingredient of a recipe.",
+                "operationId": "1a870ad9d53af7515c0f9d851a002df3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Ingredient id.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Deleted"
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            }
+        },
+        "/plans": {
+            "get": {
+                "tags": [
+                    "Meal plans"
+                ],
+                "summary": "List meal plans",
+                "description": "Returns one page of plans. A user sees only their own plans; an admin sees every plan.",
+                "operationId": "1b5394bfd55fcb9c1598b3abd12d0c3e",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Page size. Default 20, maximum 100.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "description": "Number of plans to skip. Default 0.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 0
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "One page of plans.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/MealPlan"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Meal plans"
+                ],
+                "summary": "Create a meal plan",
+                "description": "Creates a plan for the identified user. The week start date must be a Monday and the user may have only one plan per week.",
+                "operationId": "4c392effba5878b32b412f2fafbb8b3a",
+                "requestBody": {
+                    "description": "The new meal plan.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MealPlanInput"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "The created plan with its planned meals.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MealPlan"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            }
+        },
+        "/plans/{id}": {
+            "get": {
+                "tags": [
+                    "Meal plans"
+                ],
+                "summary": "Get a meal plan",
+                "description": "Returns one plan with its planned meals. The owner of the plan or an admin only.",
+                "operationId": "1aed33849ab29e1f3adb6c89ee01247a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Meal plan id.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The plan with its planned meals.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MealPlan"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Meal plans"
+                ],
+                "summary": "Update a meal plan",
+                "description": "Updates a plan. The owner of the plan or an admin only. The week start date must be a Monday; the plan being updated does not count as an existing plan for that week.",
+                "operationId": "3c3e1d72c0d59f56d45ea7fbf5889370",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Meal plan id.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "The fields to update.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MealPlanInput"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "The updated plan with its planned meals.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MealPlan"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Meal plans"
+                ],
+                "summary": "Delete a meal plan",
+                "description": "Deletes a plan together with its planned meals. The owner of the plan or an admin only.",
+                "operationId": "69d160549effd61ceee06b3dbc790b75",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Meal plan id.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Deleted"
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            }
+        },
+        "/plans/{id}/shopping-list": {
+            "get": {
+                "tags": [
+                    "Meal plans"
+                ],
+                "summary": "Get a shopping list",
+                "description": "Returns the grouped ingredients of all recipes in a plan. The owner of the plan or an admin only.",
+                "operationId": "41a44e2cda3891f616fbdcdbd274f670",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Meal plan id.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The shopping list items.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ShoppingItem"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            }
+        },
+        "/plans/{id}/meals": {
+            "get": {
+                "tags": [
+                    "Planned meals"
+                ],
+                "summary": "List planned meals",
+                "description": "Returns every planned meal of a plan, including the recipe title and image. The owner of the plan or an admin only.",
+                "operationId": "7f803bb725d3eefcd9694d49c3716df1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Meal plan id.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The planned meals of the plan.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/PlannedMeal"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Planned meals"
+                ],
+                "summary": "Add a planned meal",
+                "description": "Adds a meal to a free slot of a plan. The owner of the plan or an admin only. The recipe must exist and one slot (day and meal type) holds one meal.",
+                "operationId": "0d94af8160baca41d92e3f9a7f1e9672",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Meal plan id.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "The planned meal.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PlannedMealInput"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "The created planned meal.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlannedMeal"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            }
+        },
+        "/planned-meals/{id}": {
+            "put": {
+                "tags": [
+                    "Planned meals"
+                ],
+                "summary": "Update a planned meal",
+                "description": "Updates a planned meal. The owner of its plan or an admin only. The meal being updated does not count as occupying its own slot.",
+                "operationId": "c6306bcd7ab49c35a878e76502a673c3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Planned meal id.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "The fields to update.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PlannedMealInput"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "The updated planned meal.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlannedMeal"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Planned meals"
+                ],
+                "summary": "Delete a planned meal",
+                "description": "Deletes a planned meal. The owner of its plan or an admin only.",
+                "operationId": "f7001f221608c0b3c2aa1e5fb4660202",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Planned meal id.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Deleted"
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            }
+        },
+        "/recipes": {
+            "get": {
+                "tags": [
+                    "Recipes"
+                ],
+                "summary": "List recipes",
+                "description": "Returns one page of recipes. Any identified user. Optional filters can narrow the list by title, category and owner.",
+                "operationId": "88b96ce9cc75e3f76435b4d5850c1721",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Case-insensitive search on the recipe title.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "description": "Only recipes in this category.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "mine",
+                        "in": "query",
+                        "description": "When true, only the recipes of the identified user are returned.",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Page size. Default 20, maximum 100.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "description": "Number of recipes to skip. Default 0.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 0
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "One page of recipes, without ingredient lines.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Recipe"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Recipes"
+                ],
+                "summary": "Create a recipe",
+                "description": "Creates a recipe with at least one ingredient in one transaction. The caller is the owner and source is \"own\".",
+                "operationId": "b4d69bd447197fae4631fbea9fbc348a",
+                "requestBody": {
+                    "description": "The new recipe.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RecipeInput"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "The created recipe with its ingredients.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Recipe"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            }
+        },
+        "/recipes/{id}": {
+            "get": {
+                "tags": [
+                    "Recipes"
+                ],
+                "summary": "Get a recipe",
+                "description": "Returns one recipe with its ingredient lines. Any identified user.",
+                "operationId": "88023d9442d0a2fe01d094ebcf03cdd6",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Recipe id.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The recipe with its ingredients.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Recipe"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Recipes"
+                ],
+                "summary": "Update a recipe",
+                "description": "Updates a recipe. The owner of the recipe or an admin only. When ingredients are sent, they replace all existing ingredients in one transaction.",
+                "operationId": "2ea80dcbb7513c0ec610bac9256ba70b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Recipe id.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "The fields to update.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RecipeInput"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "The updated recipe with its ingredients.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Recipe"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Recipes"
+                ],
+                "summary": "Delete a recipe",
+                "description": "Deletes a recipe. The owner of the recipe or an admin only. Returns 400 when the recipe is used in a plan.",
+                "operationId": "d034eb0d20db6df8294c1c65c341f13b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Recipe id.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Deleted"
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            }
+        },
+        "/recipes/import/{externalId}": {
+            "post": {
+                "tags": [
+                    "Recipes"
+                ],
+                "summary": "Import a TheMealDB meal",
+                "description": "Looks up a TheMealDB meal and saves it as a recipe owned by the caller with source \"mealdb\". Importing the same meal twice returns the existing recipe with 200.",
+                "operationId": "4f8ec17d7c459aa9af4f17329dcd082b",
+                "parameters": [
+                    {
+                        "name": "externalId",
+                        "in": "path",
+                        "description": "TheMealDB meal id, at most 20 characters.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "The newly imported recipe.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Recipe"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "The recipe that was already imported by this user.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Recipe"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "503": {
+                        "description": "TheMealDB is unavailable. Returns the friendly message from docs/API.md.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            }
+        },
+        "/users": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "List users",
+                "description": "Returns one page of users without password hashes. Admins only.",
+                "operationId": "ccff9d33a4719d165c6ad673335df821",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Page size. Default 20, maximum 100.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "description": "Number of users to skip. Default 0.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 0
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "One page of users.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/User"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Register a user",
+                "description": "Public registration. The created user always gets the role \"user\"; the client cannot choose a role.",
+                "operationId": "6d2a7e7ed2de4c378b56d7b08fc5e136",
+                "requestBody": {
+                    "description": "The new user.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserInput"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "The created user.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    }
+                }
+            }
+        },
+        "/users/{id}": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get a user",
+                "description": "Returns one user without the password hash. The user with that id or an admin only.",
+                "operationId": "6ab2f4502daaec66fc33a82e9331220d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User id.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The user.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Update a user",
+                "description": "Updates a user. The user with that id or an admin only. The password is optional; only an admin may change a role.",
+                "operationId": "78eaf69d58a923430c9c4ade014c0a0f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User id.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "The fields to update.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserInput"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "The updated user.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Delete a user",
+                "description": "Deletes a user. Admins only. Returns 400 when a database constraint blocks it, for example when the user's recipes are used in other users' plans.",
+                "operationId": "e0fd8a9a7a1b34bf0e44a49d334423e0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User id.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Deleted"
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "tempUser": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Error": {
+                "type": "object",
+                "description": "Standard error response. Every error has an \"error\" message.",
+                "properties": {
+                    "error": {
+                        "type": "string",
+                        "example": "Category not found"
+                    }
+                },
+                "required": [
+                    "error"
+                ]
+            },
+            "User": {
+                "type": "object",
+                "description": "A user without the password hash.",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "first_name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 50,
+                        "example": "Una"
+                    },
+                    "last_name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 50,
+                        "example": "User"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 100,
+                        "example": "user1@forkcast.test"
+                    },
+                    "role": {
+                        "type": "string",
+                        "enum": [
+                            "admin",
+                            "user"
+                        ],
+                        "example": "user"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "description": "Creation timestamp as stored by MySQL.",
+                        "example": "2026-11-01 16:31:33"
+                    }
+                },
+                "required": [
+                    "id",
+                    "first_name",
+                    "last_name",
+                    "email",
+                    "role",
+                    "created_at"
+                ]
+            },
+            "UserInput": {
+                "type": "object",
+                "description": "User data for registration (POST) and update (PUT). The password is required on POST and optional on PUT.",
+                "properties": {
+                    "first_name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 50,
+                        "example": "Una"
+                    },
+                    "last_name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 50,
+                        "example": "User"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 100,
+                        "example": "user1@forkcast.test"
+                    },
+                    "password": {
+                        "type": "string",
+                        "description": "Required on POST, optional on PUT. Stored with password_hash(); never returned.",
+                        "minLength": 8,
+                        "maxLength": 72
+                    },
+                    "role": {
+                        "type": "string",
+                        "description": "Only an admin may change a role. On POST the role is always \"user\".",
+                        "enum": [
+                            "admin",
+                            "user"
+                        ],
+                        "example": "user"
+                    }
+                },
+                "required": [
+                    "first_name",
+                    "last_name",
+                    "email"
+                ]
+            },
+            "Category": {
+                "type": "object",
+                "description": "A recipe category.",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 4
+                    },
+                    "name": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 50,
+                        "example": "Dessert"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Optional; may be null.",
+                        "maxLength": 255,
+                        "example": "Sweet treats and baked desserts."
+                    }
+                },
+                "required": [
+                    "id",
+                    "name"
+                ]
+            },
+            "CategoryInput": {
+                "type": "object",
+                "description": "Category data for POST and PUT.",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 50,
+                        "example": "Dessert"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Optional; may be omitted.",
+                        "maxLength": 255,
+                        "example": "Sweet treats and baked desserts."
+                    }
+                },
+                "required": [
+                    "name"
+                ]
+            },
+            "MealPlan": {
+                "type": "object",
+                "description": "A weekly meal plan. GET /plans/{id}, POST /plans and PUT /plans/{id} also include the planned meals in the \"meals\" field.",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100,
+                        "example": "Week of 26 Oct"
+                    },
+                    "week_start_date": {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Start of the week (a Monday) in YYYY-MM-DD format.",
+                        "example": "2026-10-26"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "description": "Creation timestamp as stored by MySQL.",
+                        "example": "2026-11-01 16:31:33"
+                    },
+                    "meals": {
+                        "type": "array",
+                        "description": "The planned meals of this plan.",
+                        "items": {
+                            "$ref": "#/components/schemas/PlannedMeal"
+                        }
+                    }
+                },
+                "required": [
+                    "id",
+                    "user_id",
+                    "name",
+                    "week_start_date",
+                    "created_at"
+                ]
+            },
+            "MealPlanInput": {
+                "type": "object",
+                "description": "Meal plan data for POST and PUT. user_id is always the caller and cannot be set by the client.",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100,
+                        "example": "Week of 26 Oct"
+                    },
+                    "week_start_date": {
+                        "type": "string",
+                        "format": "date",
+                        "description": "A valid date that is a Monday, in YYYY-MM-DD format. Only one plan per user per week.",
+                        "example": "2026-10-26"
+                    }
+                },
+                "required": [
+                    "name",
+                    "week_start_date"
+                ]
+            },
+            "PlannedMeal": {
+                "type": "object",
+                "description": "A meal placed in one slot of a plan. List responses also include the recipe title and image.",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "plan_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "recipe_id": {
+                        "type": "integer",
+                        "example": 4
+                    },
+                    "day_of_week": {
+                        "type": "integer",
+                        "description": "Day of the week: 1 (Monday) to 7 (Sunday).",
+                        "minimum": 1,
+                        "maximum": 7,
+                        "example": 2
+                    },
+                    "meal_type": {
+                        "type": "string",
+                        "enum": [
+                            "breakfast",
+                            "lunch",
+                            "dinner",
+                            "snack"
+                        ],
+                        "example": "breakfast"
+                    },
+                    "servings": {
+                        "type": "integer",
+                        "description": "Number of servings; defaults to 1.",
+                        "minimum": 1,
+                        "maximum": 20,
+                        "example": 2
+                    },
+                    "recipe_title": {
+                        "type": "string",
+                        "description": "Included in list responses only.",
+                        "example": "Pancakes"
+                    },
+                    "recipe_image_url": {
+                        "type": "string",
+                        "description": "Included in list responses only; may be null.",
+                        "example": "https://example.com/pancakes.jpg"
+                    }
+                },
+                "required": [
+                    "id",
+                    "plan_id",
+                    "recipe_id",
+                    "day_of_week",
+                    "meal_type",
+                    "servings"
+                ]
+            },
+            "PlannedMealInput": {
+                "type": "object",
+                "description": "Planned meal data for POST and PUT. plan_id comes from the route and cannot be set by the client. One meal per slot (day and meal type).",
+                "properties": {
+                    "recipe_id": {
+                        "type": "integer",
+                        "description": "Id of an existing recipe.",
+                        "example": 4
+                    },
+                    "day_of_week": {
+                        "type": "integer",
+                        "description": "1 (Monday) to 7 (Sunday).",
+                        "minimum": 1,
+                        "maximum": 7,
+                        "example": 2
+                    },
+                    "meal_type": {
+                        "type": "string",
+                        "enum": [
+                            "breakfast",
+                            "lunch",
+                            "dinner",
+                            "snack"
+                        ],
+                        "example": "breakfast"
+                    },
+                    "servings": {
+                        "type": "integer",
+                        "description": "Optional; defaults to 1.",
+                        "minimum": 1,
+                        "maximum": 20,
+                        "default": 1,
+                        "example": 2
+                    }
+                },
+                "required": [
+                    "recipe_id",
+                    "day_of_week",
+                    "meal_type"
+                ]
+            },
+            "ShoppingItem": {
+                "type": "object",
+                "description": "One grouped ingredient of a plan shopping list.",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Eggs"
+                    },
+                    "measures": {
+                        "type": "string",
+                        "description": "Distinct measures for this ingredient joined with \", \". May be null when no measures were recorded.",
+                        "example": "2 pcs, 1 cup"
+                    },
+                    "times_used": {
+                        "type": "integer",
+                        "description": "How many planned meals use this ingredient.",
+                        "minimum": 1,
+                        "example": 3
+                    }
+                },
+                "required": [
+                    "name",
+                    "measures",
+                    "times_used"
+                ]
+            },
+            "Recipe": {
+                "type": "object",
+                "description": "A recipe stored by a user. Single-recipe responses include the ingredient lines in the \"ingredients\" field; list responses do not.",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "category_id": {
+                        "type": "integer",
+                        "example": 8
+                    },
+                    "title": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 100,
+                        "example": "Spaghetti Carbonara"
+                    },
+                    "instructions": {
+                        "type": "string",
+                        "example": "Bring a large pot of salted water to the boil and cook the spaghetti until al dente."
+                    },
+                    "prep_time_minutes": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 600,
+                        "example": 25
+                    },
+                    "servings": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 20,
+                        "example": 4
+                    },
+                    "image_url": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "Optional valid URL; may be null.",
+                        "maxLength": 500,
+                        "example": "https://example.com/carbonara.jpg"
+                    },
+                    "source": {
+                        "type": "string",
+                        "enum": [
+                            "own",
+                            "mealdb"
+                        ],
+                        "example": "own"
+                    },
+                    "external_id": {
+                        "type": "string",
+                        "description": "TheMealDB id, present on imported recipes; may be null.",
+                        "maxLength": 20,
+                        "example": "52893"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "description": "Creation timestamp as stored by MySQL.",
+                        "example": "2026-11-01 16:31:33"
+                    },
+                    "category_name": {
+                        "type": "string",
+                        "description": "Name of the category.",
+                        "example": "Pasta"
+                    },
+                    "author_first_name": {
+                        "type": "string",
+                        "description": "First name of the recipe owner.",
+                        "example": "Una"
+                    },
+                    "author_last_name": {
+                        "type": "string",
+                        "description": "Last name of the recipe owner.",
+                        "example": "User"
+                    },
+                    "ingredients": {
+                        "type": "array",
+                        "description": "The ingredient lines of the recipe.",
+                        "items": {
+                            "$ref": "#/components/schemas/Ingredient"
+                        }
+                    }
+                },
+                "required": [
+                    "id",
+                    "user_id",
+                    "category_id",
+                    "title",
+                    "instructions",
+                    "prep_time_minutes",
+                    "servings",
+                    "source",
+                    "created_at"
+                ]
+            },
+            "RecipeInput": {
+                "type": "object",
+                "description": "Recipe data for POST and PUT. user_id, source and external_id are set by the backend and cannot be sent by the client.",
+                "properties": {
+                    "category_id": {
+                        "type": "integer",
+                        "description": "Id of an existing category.",
+                        "example": 8
+                    },
+                    "title": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 100,
+                        "example": "Spaghetti Carbonara"
+                    },
+                    "instructions": {
+                        "type": "string",
+                        "minLength": 10,
+                        "maxLength": 20000,
+                        "example": "Cook the pasta until al dente and serve it with the sauce."
+                    },
+                    "prep_time_minutes": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 600,
+                        "example": 25
+                    },
+                    "servings": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 20,
+                        "example": 4
+                    },
+                    "image_url": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "Optional valid URL, at most 500 characters.",
+                        "maxLength": 500
+                    },
+                    "ingredients": {
+                        "type": "array",
+                        "description": "At least one ingredient. Required on POST; optional on PUT, where a list replaces all existing ingredients.",
+                        "items": {
+                            "$ref": "#/components/schemas/IngredientInput"
+                        },
+                        "minItems": 1
+                    }
+                },
+                "required": [
+                    "category_id",
+                    "title",
+                    "instructions",
+                    "prep_time_minutes",
+                    "servings"
+                ]
+            },
+            "Ingredient": {
+                "type": "object",
+                "description": "One ingredient line of a recipe.",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 12
+                    },
+                    "recipe_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100,
+                        "example": "Spaghetti"
+                    },
+                    "measure": {
+                        "type": "string",
+                        "description": "Optional; may be null.",
+                        "maxLength": 50,
+                        "example": "200 g"
+                    }
+                },
+                "required": [
+                    "id",
+                    "recipe_id",
+                    "name"
+                ]
+            },
+            "IngredientInput": {
+                "type": "object",
+                "description": "Ingredient data for POST and PUT. recipe_id comes from the route for POST /recipes/{id}/ingredients.",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100,
+                        "example": "Spaghetti"
+                    },
+                    "measure": {
+                        "type": "string",
+                        "description": "Optional; may be omitted.",
+                        "maxLength": 50,
+                        "example": "200 g"
+                    }
+                },
+                "required": [
+                    "name"
+                ]
+            },
+            "ExternalMeal": {
+                "type": "object",
+                "description": "A simplified meal from TheMealDB, returned by name search, random and lookup.",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "example": "52893"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Spaghetti Carbonara"
+                    },
+                    "category": {
+                        "type": "string",
+                        "description": "May be null.",
+                        "example": "Pasta"
+                    },
+                    "area": {
+                        "type": "string",
+                        "description": "May be null.",
+                        "example": "Italian"
+                    },
+                    "instructions": {
+                        "type": "string",
+                        "description": "May be null."
+                    },
+                    "thumbnail": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "Image URL from TheMealDB; may be null."
+                    },
+                    "tags": {
+                        "type": "array",
+                        "description": "Tags split from the comma separated TheMealDB value; empty when there are none.",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "Pasta",
+                            "Dinner"
+                        ]
+                    },
+                    "ingredients": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "example": "Spaghetti"
+                                },
+                                "measure": {
+                                    "type": "string",
+                                    "description": "May be null.",
+                                    "example": "200 g"
+                                }
+                            },
+                            "required": [
+                                "name"
+                            ]
+                        }
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "tags",
+                    "ingredients"
+                ]
+            },
+            "ExternalMealSummary": {
+                "type": "object",
+                "description": "A compact TheMealDB meal returned by the category, area and ingredient filters.",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "example": "52893"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Spaghetti Carbonara"
+                    },
+                    "thumbnail": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "Image URL from TheMealDB; may be null."
+                    }
+                },
+                "required": [
+                    "id",
+                    "name"
+                ]
+            }
+        },
+        "responses": {
+            "BadRequest": {
+                "description": "Invalid input or a business rule is violated.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Error"
+                        }
+                    }
+                }
+            },
+            "Unauthorized": {
+                "description": "No identified user: the X-User-Id header is missing or does not match an existing user.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Error"
+                        }
+                    }
+                }
+            },
+            "Forbidden": {
+                "description": "The caller is not allowed to perform this action.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Error"
+                        }
+                    }
+                }
+            },
+            "NotFound": {
+                "description": "The requested resource does not exist.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "tempUser": {
+                "type": "apiKey",
+                "description": "Temporary identification until JWT (Milestone 4). Use 1 for the admin, 2 for a user.",
+                "name": "X-User-Id",
+                "in": "header"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Users",
+            "description": "Registration and user accounts. An admin lists and deletes users; a user or an admin reads and updates one account."
+        },
+        {
+            "name": "Categories",
+            "description": "Recipe categories. Any identified user reads them; only an admin creates, updates or deletes one."
+        },
+        {
+            "name": "Recipes",
+            "description": "Recipes owned by users, including recipes imported from TheMealDB."
+        },
+        {
+            "name": "Ingredients",
+            "description": "The ingredients of a recipe."
+        },
+        {
+            "name": "Meal plans",
+            "description": "Weekly meal plans and their shopping lists."
+        },
+        {
+            "name": "Planned meals",
+            "description": "Meals placed in a plan slot (day and meal type)."
+        },
+        {
+            "name": "External",
+            "description": "Read-only access to TheMealDB for searching, looking up and picking random meals."
+        }
+    ]
+}

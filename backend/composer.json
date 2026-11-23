@@ -1,0 +1,27 @@
+{
+    "name": "forkcast/backend",
+    "type": "project",
+    "authors": [
+        {
+            "name": "andrejlubura-rgb",
+            "email": "andrej.lubura@stu.ibu.edu.ba"
+        }
+    ],
+    "require": {
+        "flightphp/core": "^3.19"
+    },
+    "config": {
+        "platform": {
+            "php": "8.3.36"
+        }
+    },
+    "require-dev": {
+        "zircote/swagger-php": "^7.8"
+    },
+    "autoload": { 
+        "classmap": ["openapi/"] 
+    },
+    "scripts": { 
+        "docs": "openapi --format json -o swagger/openapi.json openapi" 
+    }
+}

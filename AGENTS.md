@@ -13,8 +13,8 @@ Roles: admin, user. Entities (6): users, categories, recipes, recipe_ingredients
 
 ## Folder structure
 - frontend/: index.html, css/style.css, js/ (app.js, router.js, home.js, navbar.js, services/), views/ (one HTML fragment per view), assets/images/
-- backend/: bootstrap.php (autoloader), dao/ (Database, BaseDao and one DAO per entity), database/forkcast.sql (schema and sample data), tests/dao_smoke_test.php, config/ (config.example.php), routes/, services/, middleware/, logs/
-- docs/: AI_LOG.md, ERD.md, ERD.png
+- backend/: index.php (entry point, from S2), .htaccess, composer.json and composer.lock (Composer packages; vendor/ is generated and not committed), bootstrap.php (autoloader), dao/ (Database, BaseDao and one DAO per entity), services/ (one service per entity, plus Validator, Access and MealDbService), exceptions/ (ApiException), routes/ (FlightPHP route files and helpers.php), middleware/ (CurrentUser and Logger for now), openapi/ (OpenAPI attribute classes), swagger/ (index.html and the generated openapi.json), database/forkcast.sql (schema and sample data), tests/ (dao_smoke_test.php, api_smoke_test.php), config/ (config.example.php), logs/
+- docs/: AI_LOG.md, ERD.md, ERD.png, API.md (specification of every endpoint)   
 - AI files in the repository root: AGENTS.md, opencode.json, .opencode/, .agents/, .github/
 
 ## Frontend rules
@@ -38,7 +38,7 @@ Database and DAO layer (Milestone 2)
 - Unique keys: users.email, categories.name, (recipes.user_id, external_id), (meal_plans.user_id, week_start_date), (planned_meals.plan_id, day_of_week, meal_type).
 - ON DELETE CASCADE: recipes.user_id, recipe_ingredients.recipe_id, meal_plans.user_id, planned_meals.plan_id. ON DELETE RESTRICT: recipes.category_id, planned_meals.recipe_id.
 - Allowed values: role admin/user; recipes.source own/mealdb; meal_type breakfast/lunch/dinner/snack; day_of_week 1-7; prep_time_minutes 1-600; servings 1-20.
-- backend/bootstrap.php registers an autoloader for backend/dao, backend/services and backend/middleware. Classes are never loaded with require inside other classes.
+- backend/bootstrap.php registers an autoloader for backend/dao, backend/services, backend/middleware and backend/exceptions. Classes are never loaded with require inside other classes.
 - Database (backend/dao/Database.php) creates one shared PDO connection from backend/config/config.php (ERRMODE_EXCEPTION, FETCH_ASSOC, EMULATE_PREPARES off).
 - Every DAO extends BaseDao (getAll, getById, insert, update, delete). Each DAO declares a whitelist of columns that insert() and update() may write.
 - update() returns false only when there is nothing valid to write, and true otherwise, even if no row changed. delete() returns true if a row was deleted. Checking that a row exists is the service's job.
@@ -75,6 +75,15 @@ Planned later (do not implement before the milestone)
 - Do not test, run or open the project yourself unless I ask you to.
 - Make small changes. At the end, list the changed files with one line each. Do not paste full code into the chat.
 
+## Backend rules (Milestone 3 additions)
+- backend/index.php is the only entry point (FlightPHP installed with Composer in backend/). backend/.htaccess sends every request to it. Route files in backend/routes/ are loaded by index.php; shared helpers are in routes/helpers.php.
+- Routes contain no SQL and never touch DAOs: identify the user (CurrentUser), read the JSON body (jsonBody()), call one service method, return Flight::json(data, status).
+- Services: one per entity, the only layer that calls DAOs. Validation (Validator), access rules (Access) and business rules live in services. They throw ApiException (400, 401, 403, 404, 503); they never echo and never call Flight.
+- The error handler in index.php turns ApiException into a JSON error. Any other exception is written to backend/logs/error.log and answered with a generic 500. Responses never contain stack traces, SQL or file paths.
+- docs/API.md specifies every endpoint and rule. Implement what it says and do not add endpoints.
+- TEMPORARY until Milestone 4: CurrentUser identifies the caller by the X-User-Id header. Milestone 4 replaces it with JWT middleware.
+- OpenAPI attributes live in backend/openapi/ (not in the route files). The generated spec is backend/swagger/openapi.json and the Swagger UI page is backend/swagger/index.html.
+- Composer packages: flightphp/core and zircote/swagger-php (dev). Nothing else without asking. backend/openapi/ may use PHP 8 attributes; the other backend code stays PHP 7.4 compatible.
+
 ## Current milestone
-Milestone 2: MySQL schema and sample data (backend/database/forkcast.sql) and the DAO layer (BaseDao plus one DAO per entity). Milestone 1 (structure, static SPA, ERD, README draft) is complete.
-Do not create routes, services or middleware, and do not install Composer packages yet. The frontend stays static.
+Milestone 3: services, FlightPHP routes, OpenAPI documentation with Swagger UI, and the TheMealDB external API. Milestones 1 and 2 are complete. No JWT or middleware yet (Milestone 4). The frontend stays static.

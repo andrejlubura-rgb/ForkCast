@@ -1,0 +1,10 @@
+RewriteEngine On
+RewriteBase /forkcast/ForkCast/backend/
+
+# never serve internal folders over HTTP
+RewriteRule ^(config|dao|services|middleware|exceptions|routes|openapi|logs|tests|database|vendor)/ - [F,L]
+
+# everything that is not an existing file or folder goes to index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
