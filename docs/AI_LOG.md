@@ -76,13 +76,48 @@ the navbar should take it's full size.
 **3. UserDao and CategoryDao**
 - Tool and agent: OpenCode, Backend agent.
 - Generated: `UserDao` and `CategoryDao` with their extra methods.
-- Kept / changed / rejected:
+- Kept / changed / rejected: Kept the created DAOs.
 
 **4. DAO smoke test**
 - Tool and agent: OpenCode, Backend agent.
 - Generated: `backend/tests/dao_smoke_test.php`, a command-line script that tests the DAOs inside a transaction and rolls it back.
-- Kept / changed / rejected: 
+- Kept / changed / rejected: Kept the whole test.
 
 ### Where the AI was wrong
 
 - I reviewed the generated DAO code against AGENTS.md and my prompts. I checked for values concatenated into SQL, LIMIT and OFFSET binding, repeated placeholders, password_hash in list queries, business logic in the DAOs, PHP 8-only syntax, and extra files. I found no mistakes in the DeepSeek-generated code.
+
+## Milestone 3
+
+### Tools and tasks
+
+- **OpenCode with DeepSeek V4.1 Flash Free** (Backend agent): the support classes, the API entry point, all seven services, all routes, the TheMealDB integration, the OpenAPI documentation classes and the API smoke test.
+- **Claude (chat assistant, claude.ai):** the plan and the session prompts for this milestone.
+
+**1. Support classes**
+- Tool and agent: OpenCode, Backend agent. I asked for a plan first.
+- Main prompt (shortened): "Create ApiException, Validator, Access and Logger, add beginTransaction/commit/rollBack to BaseDao, and let the autoloader search backend/exceptions."
+- Generated: `exceptions/ApiException.php`, `services/Validator.php`, `services/Access.php`, `middleware/Logger.php`, plus the three transaction methods in `BaseDao` and one extra folder in `bootstrap.php`.
+- Changed: the agent asked whether the password should be trimmed by `clean()`. I decided it must stay exactly as typed and only be length-checked, and I asked for `mb_strlen` for all string lengths so names with characters like "Š" or "Đ" are counted correctly.
+- Kept: the rest of the plan.
+
+**2. API entry point and categories**
+- Tool and agent: OpenCode, Backend agent. I asked for a plan first.
+- Main prompt (shortened): "Create CurrentUser (temporary identification with the X-User-Id header), jsonBody(), index.php with the error handler and the catch-all route, CategoryService and the five category routes."
+- Generated: `middleware/CurrentUser.php`, `routes/helpers.php`, `index.php`, `services/CategoryService.php` and `routes/categories.php`.
+- Changed: I told the agent that `GET /categories` must use `getAll(100, 0)` so it returns all categories without paging, and I updated `docs/API.md` to say so.
+- Kept: the route order (root route, route files, catch-all, `Flight::start()`) and the error handling.
+
+**3. Users service and routes**
+- Tool and agent: OpenCode, Backend agent.
+- Generated: `services/UserService.php` and `routes/users.php`: registration with `password_hash()`, unique email, self-or-admin access, and admin-only role changes and deletion.
+
+**4. API smoke test**
+- Tool and agent: OpenCode, Backend agent.
+- Generated: `backend/tests/api_smoke_test.php`, which checks the status codes of the API and removes the data it creates.
+
+### Where the AI was wrong
+
+1. **The plan for Session S2 claimed that `backend/vendor/autoload.php` did not exist.** The plan said the file was absent and that the API would only work after `composer install`. The file existed, because I had already installed the packages with Composer. The agent probably did not see it because its file search ignores folders listed in `.gitignore`, and `vendor/` is one of them.
+   - *How I noticed:* I compared the plan with the output of `dir backend\vendor\autoload.php` that I had run before starting the session.
+   - *How I fixed it:* I told the agent that the file exists, that it must not create or change it, and that it must not run Composer. It then carried out the plan without touching `vendor/`.
